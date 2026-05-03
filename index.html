@@ -36,11 +36,11 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
         
         .node-transition { 
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        filter 0.4s ease,
-                        background-color 0.3s ease,
-                        border-color 0.3s ease; 
+            transition: opacity 0.5s cubic-bezier(0.2, 1, 0.3, 1), 
+                        left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        top 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        filter 0.5s ease;
         }
         
         .glass-panel { background: rgba(8, 12, 24, 0.8); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.06); }
@@ -80,7 +80,7 @@
             const path = `M ${start.x} ${start.y} C ${midX} ${start.y}, ${midX} ${end.y}, ${end.x} ${end.y}`;
             
             const baseOpacity = visible ? (active ? 'opacity-100' : (isFaint ? 'opacity-[0.01]' : (isReporting ? 'opacity-10' : 'opacity-8'))) : 'opacity-0';
-            const strokeWidth = active ? "0.8" : "0.025"; 
+            const strokeWidth = active ? "0.7" : "0.02"; 
 
             return (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -95,8 +95,8 @@
                     />
                     {active && (
                         <React.Fragment>
-                            <circle cx={start.x} cy={start.y} r="0.2" fill={color} className="animate-popup" />
-                            <circle cx={end.x} cy={end.y} r="0.2" fill={color} className="animate-popup" />
+                            <circle cx={start.x} cy={start.y} r="0.18" fill={color} className="animate-popup" />
+                            <circle cx={end.x} cy={end.y} r="0.18" fill={color} className="animate-popup" />
                         </React.Fragment>
                     )}
                 </svg>
@@ -169,7 +169,7 @@
                 pay_audit_yr: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly", theme: 'slate' }
             });
 
-            const coords = {
+            const baseCoords = {
                 ent_ceg: { x: 10, y: 12 }, ent_enr: { x: 10, y: 24 }, ent_hsk: { x: 10, y: 36 }, ent_klc: { x: 10, y: 48 }, ent_tgi: { x: 10, y: 60 }, ent_vn: { x: 10, y: 72 }, ent_aus: { x: 10, y: 84 },
                 manager: { x: 35, y: 20 }, recruiter: { x: 35, y: 52 }, payroll: { x: 35, y: 84 },
                 cat_m_strat: { x: 62, y: 6 }, cat_m_policy: { x: 62, y: 13 }, cat_m_talent: { x: 62, y: 20 }, cat_m_policy_improve: { x: 62, y: 27 }, cat_m_projects: { x: 62, y: 34 },
@@ -179,6 +179,79 @@
                 cat_pay_benefits: { x: 62, y: 80 }, cat_pay_monthly: { x: 62, y: 88 }, cat_pay_yearly: { x: 62, y: 96 },
                 pay_insurance: { x: 90, y: 80 }, pay_salary: { x: 90, y: 86 }, pay_claims: { x: 90, y: 89 }, pay_tax_yr: { x: 90, y: 94 }, pay_audit_yr: { x: 90, y: 98 }
             };
+
+            const effectiveCoords = useMemo(() => {
+                if (!activeNodeId) return baseCoords;
+                const active = data[activeNodeId];
+                if (!active) return baseCoords;
+
+                const focusX = baseCoords[activeNodeId].x;
+                const focusY = baseCoords[activeNodeId].y;
+                const newCoords = { ...baseCoords };
+
+                const relatedIds = [];
+                if (active.type === 'entity') {
+                    Object.entries(data).forEach(([id, val]) => {
+                        if (val.type === 'role' && val.reportsTo?.includes(activeNodeId)) {
+                            relatedIds.push(id);
+                            Object.entries(data).forEach(([catId, catVal]) => {
+                                if (catVal.type === 'category' && catVal.belongsTo === id) relatedIds.push(catId);
+                            });
+                        }
+                    });
+                } else if (active.type === 'role') {
+                    active.reportsTo?.forEach(id => relatedIds.push(id));
+                    Object.entries(data).forEach(([id, val]) => {
+                        if (val.type === 'category' && val.belongsTo === activeNodeId) relatedIds.push(id);
+                    });
+                } else if (active.type === 'category') {
+                    if (active.belongsTo) relatedIds.push(active.belongsTo);
+                    const parentRoleId = active.belongsTo;
+                    if (data[parentRoleId]?.reportsTo) data[parentRoleId].reportsTo.forEach(id => relatedIds.push(id));
+                    Object.entries(data).forEach(([id, val]) => {
+                        if (val.type === 'task' && val.belongsToCat === activeNodeId) relatedIds.push(id);
+                    });
+                } else if (active.type === 'task') {
+                    const catId = active.belongsToCat;
+                    if (catId) {
+                        relatedIds.push(catId);
+                        const roleId = data[catId]?.belongsTo;
+                        if (roleId) {
+                            relatedIds.push(roleId);
+                            if (data[roleId]?.reportsTo) data[roleId].reportsTo.forEach(id => relatedIds.push(id));
+                        }
+                    }
+                }
+
+                const columnGroups = { 10: [], 35: [], 62: [], 90: [] };
+                relatedIds.forEach(id => {
+                    const bx = baseCoords[id].x;
+                    columnGroups[bx].push(id);
+                });
+
+                Object.entries(columnGroups).forEach(([colX, ids]) => {
+                    const cx = parseFloat(colX);
+                    const isLeftOfFocus = cx < focusX;
+                    const isRightOfFocus = cx > focusX;
+                    
+                    ids.forEach((id, idx) => {
+                        let targetX = cx;
+                        if (isLeftOfFocus) targetX += 8;
+                        if (isRightOfFocus) targetX -= 8;
+                        
+                        // ANTI-STACKING LOGIC: Larger spread for entities
+                        const spread = data[id].type === 'entity' ? 12 : 7;
+                        const offset = (idx - (ids.length - 1) / 2) * spread;
+                        
+                        newCoords[id] = { 
+                            x: targetX, 
+                            y: focusY + offset 
+                        };
+                    });
+                });
+
+                return newCoords;
+            }, [activeNodeId, data]);
 
             const stats = useMemo(() => {
                 const roles = ['manager', 'recruiter', 'payroll'];
@@ -204,7 +277,7 @@
             const renderNode = (nodeKey) => {
                 const nodeData = data[nodeKey];
                 const visible = isNodeVisible(nodeKey);
-                const { x, y } = coords[nodeKey] || { x: 50, y: 50 };
+                const { x, y } = effectiveCoords[nodeKey] || { x: 50, y: 50 };
                 const isEntity = nodeData.type === 'entity';
                 const isRole = nodeData.type === 'role';
                 const isCategory = nodeData.type === 'category';
@@ -216,14 +289,11 @@
                     if (nodeKey === activeNodeId) {
                         isRelated = true;
                     } else if (isEntity) {
-                        // Case: Active is a Role
                         if (activeData?.type === 'role' && activeData.reportsTo?.includes(nodeKey)) isRelated = true;
-                        // Case: Active is a Category
                         else if (activeData?.type === 'category') {
                             const roleId = activeData.belongsTo;
                             if (data[roleId]?.reportsTo?.includes(nodeKey)) isRelated = true;
                         }
-                        // Case: Active is a Task (Bug fix requested)
                         else if (activeData?.type === 'task') {
                             const catId = activeData.belongsToCat;
                             const roleId = data[catId]?.belongsTo;
@@ -263,14 +333,14 @@
                             ${isFocused ? 'active-glow bg-slate-800 z-[110] scale-[1.03]' : 'z-10'} 
                             ${isRelated && !isFocused ? 'border-indigo-500/60 z-[100]' : ''} 
                             ${visible ? 'opacity-100' : 'opacity-0 scale-95 pointer-events-none'}
-                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.015] grayscale blur-[5px]' : 'cursor-pointer'}`} 
+                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.01] grayscale blur-[8px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}%`, top: `${y}%` }}
                     >
                         {isEntity ? (
                             <div className="text-center">
                                 <div className="text-[6px] font-black uppercase opacity-20 mb-1.5 tracking-widest">{nodeData.region}</div>
                                 <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90">{nodeData.title}</div>
-                                <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg' : 'bg-white/5'}`}>
+                                <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg' : 'bg-white/5'}`}>
                                     <Icon name="users" size={10}/><span className="text-[11px] font-black">{nodeData.employeeCount}</span>
                                 </div>
                             </div>
@@ -390,7 +460,6 @@
                     ) : (
                         <div className="flex-1 relative glass-panel rounded-[3rem] border border-white/10 overflow-hidden touch-none">
                             <div ref={containerRef} className="absolute inset-0 transition-transform duration-1000" style={{ transform: `scale(${zoomLevel})` }}>
-                                {/* Column Alignment Guides */}
                                 <div className="pointer-events-none opacity-[0.015] h-full w-full">
                                     <div className="absolute top-0 left-[10%] h-full w-[1px] bg-white"/>
                                     <div className="absolute top-0 left-[35%] h-full w-[1px] bg-white"/>
@@ -398,17 +467,40 @@
                                     <div className="absolute top-0 left-[90%] h-full w-[1px] bg-white"/>
                                 </div>
                                 
-                                {/* Precision Signal Paths */}
-                                {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => v.reportsTo?.map(ent => (
-                                    <Connection key={`${k}-${ent}`} start={coords[ent]} end={coords[k]} color="#64748b" isReporting={true} active={activeNodeId === k || activeNodeId === ent || (data[activeNodeId]?.type === 'task' && data[data[activeNodeId].belongsToCat]?.belongsTo === k && data[k].reportsTo?.includes(ent))} isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} visible={true}/>
-                                )))}
+                                {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => (
+                                    v.reportsTo?.map(ent => (
+                                        <Connection 
+                                            key={`${k}-${ent}`} 
+                                            start={effectiveCoords[ent]} 
+                                            end={effectiveCoords[k]} 
+                                            color="#64748b" 
+                                            isReporting={true} 
+                                            active={activeNodeId === k || activeNodeId === ent || (data[activeNodeId]?.type === 'task' && data[data[activeNodeId].belongsToCat]?.belongsTo === k && data[k].reportsTo?.includes(ent))} 
+                                            isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} 
+                                            visible={true}/>
+                                    ))
+                                ))}
 
                                 {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
-                                    <Connection key={`${k}-cat`} start={coords[v.belongsTo]} end={coords[k]} color="#818CF8" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} visible={isNodeVisible(k)}/>
+                                    <Connection 
+                                        key={`${k}-cat`} 
+                                        start={effectiveCoords[v.belongsTo]} 
+                                        end={effectiveCoords[k]} 
+                                        color="#818CF8" 
+                                        active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} 
+                                        pulsing={true} 
+                                        visible={isNodeVisible(k)}/>
                                 ))}
 
                                 {Object.entries(data).filter(([k,v]) => v.type === 'task').map(([k, v]) => (
-                                    <Connection key={`${k}-task`} start={coords[v.belongsToCat]} end={coords[k]} color="#818CF8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} visible={isNodeVisible(k)}/>
+                                    <Connection 
+                                        key={`${k}-task`} 
+                                        start={effectiveCoords[v.belongsToCat]} 
+                                        end={effectiveCoords[k]} 
+                                        color="#818CF8" 
+                                        active={activeNodeId === k || activeNodeId === v.belongsToCat} 
+                                        pulsing={true} 
+                                        visible={isNodeVisible(k)}/>
                                 ))}
 
                                 {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
