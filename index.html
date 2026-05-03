@@ -338,11 +338,21 @@
                     >
                         {isEntity ? (
                             <div className="text-center">
-                                <div className="text-[6px] font-black uppercase opacity-20 mb-1.5 tracking-widest">{nodeData.region}</div>
-                                <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90">{nodeData.title}</div>
-                                <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg' : 'bg-white/5'}`}>
+                                <div className="text-[6px] font-black uppercase opacity-20 mb-1.5 tracking-widest text-left">{nodeData.region}</div>
+                                <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90 text-left">{nodeData.title}</div>
+                                <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg font-bold' : 'bg-white/5'}`}>
                                     <Icon name="users" size={10}/><span className="text-[11px] font-black">{nodeData.employeeCount}</span>
                                 </div>
+                                
+                                {nodeData.breakdown && (
+                                    <div className="mt-3 pt-2.5 border-t border-white/5 flex justify-between items-center text-[7px] font-black opacity-30 uppercase tracking-tighter">
+                                        <div className="flex flex-col items-center"><span>FT</span><span className="text-white/60 font-bold">{nodeData.breakdown.ft}</span></div>
+                                        <div className="w-[1px] h-3 bg-white/10" />
+                                        <div className="flex flex-col items-center"><span>PT</span><span className="text-white/60 font-bold">{nodeData.breakdown.pt}</span></div>
+                                        <div className="w-[1px] h-3 bg-white/10" />
+                                        <div className="flex flex-col items-center"><span>FL</span><span className="text-white/60 font-bold">{nodeData.breakdown.fl}</span></div>
+                                    </div>
+                                )}
                             </div>
                         ) : isRole ? (
                             <div className="flex flex-col">
