@@ -10,41 +10,40 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #050811; color: #e2e8f0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #02040a; color: #f1f5f9; overflow-x: hidden; }
         
-        @keyframes lineFlow {
-            from { stroke-dashoffset: 24; }
+        @keyframes signalFlow {
+            from { stroke-dashoffset: 40; }
             to { stroke-dashoffset: 0; }
         }
 
-        .animate-running-line {
-            stroke-dasharray: 6, 12; 
-            animation: lineFlow 0.8s linear infinite;
+        .animate-signal {
+            stroke-dasharray: 6, 18; 
+            animation: signalFlow 2.5s linear infinite;
         }
 
         @keyframes fadeInScale {
-            from { opacity: 0; transform: translateY(-5px) scale(0.95); }
+            from { opacity: 0; transform: translateY(-4px) scale(0.99); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .animate-popup {
-            animation: fadeInScale 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .touch-none { touch-action: none; }
         
         .node-transition { 
-            transition: opacity 0.4s ease, 
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
                         filter 0.4s ease,
-                        box-shadow 0.4s ease; 
+                        background-color 0.3s ease; 
         }
         
-        .glow-active { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-panel { background: rgba(10, 15, 30, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .active-ring { ring: 1px solid rgba(99, 102, 241, 0.6); box-shadow: 0 0 25px rgba(99, 102, 241, 0.1); }
     </style>
 </head>
 <body>
@@ -79,20 +78,36 @@
             const midX = (start.x + end.x) / 2;
             const path = `M ${start.x} ${start.y} C ${midX} ${start.y}, ${midX} ${end.y}, ${end.x} ${end.y}`;
             
-            // Clean logic: If something is active, dim the rest almost to zero
-            const baseOpacity = visible ? (active ? 'opacity-100' : (isFaint ? 'opacity-[0.02]' : (isReporting ? 'opacity-10' : 'opacity-10'))) : 'opacity-0 pointer-events-none';
-            const strokeWidth = active ? "1.5" : "0.2";
+            // Ultra-thin refinement: 0.05 for background, 0.8 for active
+            const baseOpacity = visible ? (active ? 'opacity-100' : (isFaint ? 'opacity-[0.01]' : (isReporting ? 'opacity-10' : 'opacity-8'))) : 'opacity-0';
+            const strokeWidth = active ? "0.8" : "0.05"; 
 
             return (
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d={path} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={isReporting ? "1 4" : "none"} className={`${baseOpacity} transition-all duration-700 ease-in-out ${pulsing && active ? 'animate-running-line' : ''}`}/>
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path 
+                        d={path} 
+                        fill="none" 
+                        stroke={color} 
+                        strokeWidth={strokeWidth} 
+                        strokeLinecap="round" 
+                        strokeDasharray={isReporting && !active ? "0.3 2" : "none"}
+                        className={`${baseOpacity} transition-all duration-500 ease-in-out ${pulsing && active ? 'animate-signal' : ''}`}
+                    />
+                    
+                    {/* Tiny Terminal Pins for active path */}
+                    {active && (
+                        <React.Fragment>
+                            <circle cx={start.x} cy={start.y} r="0.25" fill={color} className="animate-popup" />
+                            <circle cx={end.x} cy={end.y} r="0.25" fill={color} className="animate-popup" />
+                        </React.Fragment>
+                    )}
                 </svg>
             );
         };
 
         function App() {
             const [viewMode, setViewMode] = useState('presentation');
-            const [zoomLevel, setZoomLevel] = useState(0.8);
+            const [zoomLevel, setZoomLevel] = useState(0.85);
             const [hoveredNode, setHoveredNode] = useState(null);
             const [selectedNode, setSelectedNode] = useState(null);
             const containerRef = useRef(null);
@@ -109,7 +124,8 @@
                 ent_vn: { type: 'entity', title: "Vietnam", employeeCount: 100, region: 'Overseas' },
                 ent_aus: { type: 'entity', title: "Australia", employeeCount: 0, region: 'Overseas' },
                 
-                manager: { type: 'role', title: "HR Manager", subtitle: "Lead", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_klc', 'ent_tgi', 'ent_vn', 'ent_aus'] },
+                // Manager no longer covers KLC and TGI
+                manager: { type: 'role', title: "HR Manager", subtitle: "Lead", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_vn', 'ent_aus'] },
                 recruiter: { type: 'role', title: "HR Executive", subtitle: "Execution", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk'] },
                 payroll: { type: 'role', title: "Payroll Specialist", subtitle: "Support", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_klc', 'ent_tgi'] },
                 
@@ -156,16 +172,15 @@
                 pay_audit_yr: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly", theme: 'slate' }
             });
 
-            // Base coordinates (Stable)
             const coords = {
-                ent_ceg: { x: 12, y: 10 }, ent_enr: { x: 12, y: 22 }, ent_hsk: { x: 12, y: 34 }, ent_klc: { x: 12, y: 46 }, ent_tgi: { x: 12, y: 58 }, ent_vn: { x: 12, y: 70 }, ent_aus: { x: 12, y: 82 },
-                manager: { x: 38, y: 18 }, recruiter: { x: 38, y: 50 }, payroll: { x: 38, y: 86 },
-                cat_m_strat: { x: 65, y: 6 }, cat_m_policy: { x: 65, y: 12 }, cat_m_talent: { x: 65, y: 18 }, cat_m_policy_improve: { x: 65, y: 24 }, cat_m_projects: { x: 65, y: 30 },
-                m_workforce: { x: 92, y: 4 }, m_budget: { x: 92, y: 7 }, m_handbook: { x: 92, y: 10 }, m_legal: { x: 92, y: 13 }, m_appraisal: { x: 92, y: 16 }, m_succession: { x: 92, y: 19 }, m_policy_review: { x: 92, y: 22 }, m_process_opt: { x: 92, y: 25 }, m_hris: { x: 92, y: 29 }, m_digitization: { x: 92, y: 31 },
-                cat_lifecycle: { x: 65, y: 38 }, cat_recruitment: { x: 65, y: 46 }, cat_ops: { x: 65, y: 54 }, cat_exec_monthly: { x: 65, y: 62 }, cat_exec_yearly: { x: 65, y: 70 },
-                hr_onboarding: { x: 92, y: 36 }, hr_offboarding: { x: 92, y: 40 }, hr_job_post: { x: 92, y: 44 }, hr_screening: { x: 92, y: 48 }, hr_records: { x: 92, y: 52 }, hr_work_pass: { x: 92, y: 56 }, hr_claims_verify: { x: 92, y: 62 }, hr_tax_yr_exec: { x: 92, y: 70 },
-                cat_pay_benefits: { x: 65, y: 78 }, cat_pay_monthly: { x: 65, y: 84 }, cat_pay_yearly: { x: 65, y: 92 },
-                pay_insurance: { x: 92, y: 78 }, pay_salary: { x: 92, y: 84 }, pay_claims: { x: 92, y: 88 }, pay_tax_yr: { x: 92, y: 93 }, pay_audit_yr: { x: 92, y: 97 }
+                ent_ceg: { x: 10, y: 12 }, ent_enr: { x: 10, y: 24 }, ent_hsk: { x: 10, y: 36 }, ent_klc: { x: 10, y: 48 }, ent_tgi: { x: 10, y: 60 }, ent_vn: { x: 10, y: 72 }, ent_aus: { x: 10, y: 84 },
+                manager: { x: 35, y: 20 }, recruiter: { x: 35, y: 52 }, payroll: { x: 35, y: 84 },
+                cat_m_strat: { x: 62, y: 6 }, cat_m_policy: { x: 62, y: 13 }, cat_m_talent: { x: 62, y: 20 }, cat_m_policy_improve: { x: 62, y: 27 }, cat_m_projects: { x: 62, y: 34 },
+                m_workforce: { x: 90, y: 4 }, m_budget: { x: 90, y: 7 }, m_handbook: { x: 90, y: 11 }, m_legal: { x: 90, y: 14 }, m_appraisal: { x: 90, y: 18 }, m_succession: { x: 90, y: 21 }, m_policy_review: { x: 90, y: 25 }, m_process_opt: { x: 90, y: 28 }, m_hris: { x: 90, y: 32 }, m_digitization: { x: 90, y: 35 },
+                cat_lifecycle: { x: 62, y: 41 }, cat_recruitment: { x: 62, y: 49 }, cat_ops: { x: 62, y: 57 }, cat_exec_monthly: { x: 62, y: 65 }, cat_exec_yearly: { x: 62, y: 73 },
+                hr_onboarding: { x: 90, y: 39 }, hr_offboarding: { x: 90, y: 42 }, hr_job_post: { x: 90, y: 47 }, hr_screening: { x: 90, y: 50 }, hr_records: { x: 90, y: 55 }, hr_work_pass: { x: 90, y: 58 }, hr_claims_verify: { x: 90, y: 65 }, hr_tax_yr_exec: { x: 90, y: 73 },
+                cat_pay_benefits: { x: 62, y: 80 }, cat_pay_monthly: { x: 62, y: 88 }, cat_pay_yearly: { x: 62, y: 96 },
+                pay_insurance: { x: 90, y: 80 }, pay_salary: { x: 90, y: 86 }, pay_claims: { x: 90, y: 89 }, pay_tax_yr: { x: 90, y: 94 }, pay_audit_yr: { x: 90, y: 98 }
             };
 
             const stats = useMemo(() => {
@@ -213,10 +228,10 @@
                 }
 
                 const themes = {
-                    indigo: 'bg-slate-900/90 border-indigo-500/30 text-indigo-100',
-                    emerald: 'bg-slate-900/90 border-emerald-500/30 text-emerald-100',
-                    slate: 'bg-slate-900/90 border-slate-600/30 text-slate-100',
-                    entity: 'bg-slate-900/90 border-white/10 text-white shadow-xl'
+                    indigo: 'bg-slate-900 border-indigo-500/10 text-indigo-100 hover:border-indigo-500/20',
+                    emerald: 'bg-slate-900 border-emerald-500/10 text-emerald-100 hover:border-emerald-500/20',
+                    slate: 'bg-slate-900 border-slate-600/10 text-slate-100 hover:border-slate-600/20',
+                    entity: 'bg-slate-950 border-white/5 text-white hover:border-white/10'
                 };
 
                 const roleTotal = isRole ? stats.roleStats.find(r => r.id === nodeKey)?.hours : 0;
@@ -228,63 +243,56 @@
                         onMouseLeave={() => setHoveredNode(null)} 
                         className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-transition backdrop-blur-3xl border 
                             ${isEntity ? themes.entity : (themes[nodeData.theme] || themes.indigo)} 
-                            ${isEntity ? 'w-40 p-3 rounded-xl' : (isRole ? 'w-56 p-4 rounded-[1.5rem]' : (isCategory ? 'w-48 p-2.5 rounded-xl' : 'w-40 p-2 rounded-full'))} 
-                            ${isFocused ? 'glow-active ring-2 ring-indigo-400 z-[110] border-indigo-400 scale-105' : 'z-10'} 
-                            ${isRelated && !isFocused ? 'border-indigo-400 ring-1 ring-indigo-400/50 z-[100]' : ''} 
+                            ${isEntity ? 'w-32 p-2.5 rounded-xl' : (isRole ? 'w-48 p-3.5 rounded-2xl' : (isCategory ? 'w-40 p-2 rounded-xl' : 'w-32 p-1 rounded-full'))} 
+                            ${isFocused ? 'active-ring bg-slate-800 z-[110] scale-[1.02]' : 'z-10'} 
+                            ${isRelated && !isFocused ? 'border-indigo-500/40 z-[100]' : ''} 
                             ${visible ? 'opacity-100' : 'opacity-0 scale-95 pointer-events-none'}
-                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.05] grayscale blur-[2px]' : 'cursor-pointer'}`} 
+                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.02] grayscale blur-[3px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}%`, top: `${y}%` }}
                     >
                         {isEntity ? (
                             <div className="text-center">
-                                <div className="text-[7px] font-black uppercase opacity-40 mb-1 tracking-widest">{nodeData.region}</div>
-                                <div className="font-black text-[11px] uppercase tracking-tighter mb-2">{nodeData.title}</div>
-                                <div className={`w-full py-1 rounded-lg flex items-center justify-center gap-1.5 transition-all ${isRelated ? 'bg-indigo-600 shadow-lg' : 'bg-white/5'}`}>
-                                    <Icon name="users" size={10}/><span className="text-xs font-black">{nodeData.employeeCount}</span>
+                                <div className="text-[5px] font-black uppercase opacity-20 mb-1 tracking-widest">{nodeData.region}</div>
+                                <div className="font-bold text-[9px] uppercase tracking-tighter mb-1.5">{nodeData.title}</div>
+                                <div className={`w-full py-0.5 rounded flex items-center justify-center gap-1 transition-all ${isRelated ? 'bg-indigo-600/60' : 'bg-white/5'}`}>
+                                    <Icon name="users" size={7}/><span className="text-[9px] font-black">{nodeData.employeeCount}</span>
                                 </div>
-                                {isFocused && nodeData.breakdown && (
-                                    <div className="mt-2 pt-2 border-t border-white/10 space-y-1 text-[7px] font-bold text-left animate-popup">
-                                        <div className="flex justify-between"><span className="opacity-50">FT</span><span className="text-emerald-400">{nodeData.breakdown.ft}</span></div>
-                                        <div className="flex justify-between"><span className="opacity-50">PT</span><span className="text-sky-400">{nodeData.breakdown.pt}</span></div>
-                                        <div className="flex justify-between"><span className="opacity-50">FL</span><span className="text-amber-400">{nodeData.breakdown.fl}</span></div>
-                                    </div>
-                                )}
                             </div>
                         ) : isRole ? (
                             <div className="flex flex-col">
-                                <div className="flex justify-between items-center mb-3">
-                                    <div className="text-[9px] font-black uppercase opacity-40 tracking-widest">{nodeData.subtitle}</div>
-                                    <div className="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-400 text-[9px] font-black border border-indigo-500/20 flex items-center gap-1">
-                                        <Icon name="users" size={10}/>{stats.roleStats.find(r => r.id === nodeKey)?.population}
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <div className="text-[7px] font-black uppercase opacity-20 tracking-widest">{nodeData.subtitle}</div>
+                                    <div className="px-1 py-0.5 rounded bg-white/5 text-indigo-400 text-[7px] font-bold">
+                                        P: {stats.roleStats.find(r => r.id === nodeKey)?.population}
                                     </div>
                                 </div>
-                                <div className="font-black text-base leading-none mb-3 uppercase tracking-tighter text-left">{nodeData.title}</div>
-                                <div className="bg-white/5 border border-white/5 rounded-lg p-2 shadow-inner">
+                                <div className="font-black text-xs leading-tight mb-2 uppercase tracking-tighter text-left">{nodeData.title}</div>
+                                <div className="bg-black/10 rounded-lg p-1.5 border border-white/5">
                                     <div className="flex justify-between items-center mb-1 text-left">
-                                        <span className="text-[8px] font-black opacity-40 uppercase tracking-tighter">Capacity</span>
-                                        <span className="text-[10px] font-black text-indigo-300">{roleTotal}h</span>
+                                        <span className="text-[6px] font-black opacity-20 uppercase tracking-tighter text-left">Usage</span>
+                                        <span className="text-[8px] font-bold text-indigo-400">{roleTotal}h</span>
                                     </div>
-                                    <div className="w-full bg-black/40 h-1 rounded-full overflow-hidden">
-                                        <div className={`h-full rounded-full transition-all duration-1000 ${roleTotal > 40 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]'}`} style={{ width: `${Math.min((roleTotal / 40) * 100, 100)}%` }}/>
+                                    <div className="w-full bg-white/5 h-0.5 rounded-full overflow-hidden">
+                                        <div className={`h-full transition-all duration-1000 ${roleTotal > 40 ? 'bg-red-500' : 'bg-indigo-500/60'}`} style={{ width: `${Math.min((roleTotal / 40) * 100, 100)}%` }}/>
                                     </div>
                                 </div>
                             </div>
                         ) : isCategory ? (
                             <div className="flex justify-between items-center text-left">
                                 <div className="truncate">
-                                    <div className="text-[10px] font-black uppercase tracking-tight mb-0.5 truncate">{nodeData.title}</div>
-                                    <div className="text-[8px] font-black opacity-30 uppercase">{(Object.values(data).filter(n => n.belongsToCat === nodeKey).reduce((s,t)=>s+(t.hours||0),0))}H WORKLOAD</div>
+                                    <div className="text-[8px] font-bold uppercase tracking-tight mb-0.5 truncate">{nodeData.title}</div>
+                                    <div className="text-[6px] font-black opacity-20 uppercase tracking-tighter">{(Object.values(data).filter(n => n.belongsToCat === nodeKey).reduce((s,t)=>s+(t.hours||0),0))}H Load</div>
                                 </div>
-                                <div className={`p-1.5 rounded-lg transition-all ${isRelated ? 'bg-indigo-600 text-white' : 'bg-white/5 text-indigo-400'}`}>
-                                    <Icon name="chevron" size={12} className={isFocused ? 'rotate-90 transition-transform' : ''}/>
+                                <div className={`p-1 rounded transition-all ${isRelated ? 'bg-indigo-600 text-white' : 'opacity-10'}`}>
+                                    <Icon name="chevron" size={8} className={isFocused ? 'rotate-90' : ''}/>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 px-1 text-left">
-                                <div className="p-1.5 bg-white/10 rounded-full text-indigo-400"><Icon name="clock" size={10}/></div>
+                            <div className="flex items-center gap-1.5 px-1 text-left">
+                                <div className="p-1 bg-white/5 rounded-full text-indigo-500"><Icon name="clock" size={7}/></div>
                                 <div className="truncate flex-1">
-                                    <div className="text-[9px] font-bold truncate uppercase">{nodeData.title}</div>
-                                    <div className="text-[7px] font-black text-indigo-300/80 mt-1 uppercase">{nodeData.hours} HRS</div>
+                                    <div className="text-[7px] font-bold truncate uppercase">{nodeData.title}</div>
+                                    <div className="text-[5px] font-black text-indigo-400/40 uppercase leading-none">{nodeData.hours} HRS</div>
                                 </div>
                             </div>
                         )}
@@ -293,85 +301,71 @@
             };
 
             return (
-                <div className="min-h-screen relative flex flex-col p-6 md:p-8" onClick={() => setSelectedNode(null)}>
-                    <header className="relative z-[200] flex flex-col lg:flex-row justify-between items-center gap-6 glass-panel p-5 rounded-[2.5rem] shadow-2xl mb-10">
-                        <div className="flex items-center gap-6">
-                            <div className="p-4 bg-indigo-600 rounded-[1.2rem] shadow-xl"><Icon name="shield" size={24} className="text-white"/></div>
+                <div className="min-h-screen relative flex flex-col p-6 lg:p-8" onClick={() => setSelectedNode(null)}>
+                    <header className="relative z-[200] flex flex-col lg:flex-row justify-between items-center gap-6 glass-panel p-4 rounded-3xl shadow-2xl mb-8">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-600/10"><Icon name="shield" size={18} className="text-white"/></div>
                             <div>
-                                <h1 className="text-xl font-black tracking-tighter uppercase leading-none mb-1 text-left">Strategic HR Map</h1>
-                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-[0.2em] text-left">Architecture & Audit Insight</p>
+                                <h1 className="text-base font-black tracking-tighter uppercase leading-none mb-1 text-left">Strategic HR Map</h1>
+                                <p className="text-[7px] font-bold opacity-20 uppercase tracking-[0.2em] text-left">Precision Organization Audit</p>
                             </div>
                         </div>
-                        <div className="flex gap-2 bg-black/40 p-1 rounded-xl border border-white/5">
+                        <div className="flex gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/5">
                             {['admin', 'presentation', 'analytics'].map(m => (
-                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-8 py-2.5 rounded-lg text-[9px] font-black transition-all tracking-widest ${viewMode === m ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}>{m.toUpperCase()}</button>
+                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-6 py-1.5 rounded-xl text-[7px] font-black transition-all tracking-widest ${viewMode === m ? 'bg-white/10 text-white border border-white/10' : 'text-slate-500 hover:text-white'}`}>{m.toUpperCase()}</button>
                             ))}
                         </div>
                     </header>
 
                     {viewMode === 'analytics' ? (
                         <div className="flex-1 glass-panel rounded-[2.5rem] p-8 lg:p-12 overflow-y-auto custom-scrollbar animate-popup">
-                            <div className="max-w-6xl mx-auto space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-left">
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-xl">
-                                        <div className="text-[9px] font-black opacity-30 mb-4 uppercase tracking-widest"><Icon name="clock" size={12} className="inline mr-2"/> Weekly Load</div>
-                                        <div className="text-5xl font-black tracking-tighter">{stats.totalHours.toFixed(1)}<span className="text-xl font-black opacity-20 ml-2">h</span></div>
+                            <div className="max-w-6xl mx-auto space-y-8 text-left">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                        <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">Total Weekly Workload</div>
+                                        <div className="text-3xl font-black">{stats.totalHours.toFixed(1)}<span className="text-xs opacity-20 ml-1">H</span></div>
                                     </div>
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-xl">
-                                        <div className="text-[9px] font-black opacity-30 mb-4 uppercase tracking-widest"><Icon name="users" size={12} className="inline mr-2"/> Served Staff</div>
-                                        <div className="text-5xl font-black tracking-tighter text-indigo-400">{stats.totalStaff}</div>
+                                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                        <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">Total Staff Base</div>
+                                        <div className="text-3xl font-black text-indigo-400">{stats.totalStaff}</div>
                                     </div>
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-xl">
-                                        <div className="text-[9px] font-black opacity-30 mb-4 uppercase tracking-widest"><Icon name="bar" size={12} className="inline mr-2"/> HR:Staff Ratio</div>
-                                        <div className="text-5xl font-black tracking-tighter">1:{Math.round(stats.totalStaff / 3)}</div>
+                                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                        <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">HR:Staff Efficiency</div>
+                                        <div className="text-3xl font-black">1:{Math.round(stats.totalStaff / 3)}</div>
                                     </div>
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-xl">
-                                        <div className="text-[9px] font-black opacity-30 mb-4 uppercase tracking-widest"><Icon name="trending" size={12} className="inline mr-2"/> Entities</div>
-                                        <div className="text-5xl font-black tracking-tighter text-emerald-400">7</div>
+                                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                        <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">Global Regions</div>
+                                        <div className="text-3xl font-black text-emerald-400">2</div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
-                                    <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                                        <div className="flex justify-between items-end mb-8">
-                                            <h3 className="text-xs font-black opacity-40 uppercase tracking-[0.4em]">Capacity Distribution</h3>
-                                            <Icon name="pie" size={20} className="opacity-20"/>
-                                        </div>
-                                        <div className="space-y-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/5">
+                                        <h3 className="text-[8px] font-black opacity-20 uppercase tracking-[0.4em] mb-8 flex items-center gap-2"><Icon name="pie" size={10}/> Utilization Profile</h3>
+                                        <div className="space-y-6">
                                             {stats.roleStats.map(r => (
                                                 <div key={r.id}>
-                                                    <div className="flex justify-between mb-3 text-[10px] font-black uppercase tracking-widest">
+                                                    <div className="flex justify-between mb-2 text-[8px] font-black uppercase tracking-widest text-left">
                                                         <span>{r.title}</span>
-                                                        <span className={r.hours > 40 ? "text-red-400 font-black" : "text-indigo-300"}>{Math.round((r.hours / 40) * 100)}% Usage</span>
+                                                        <span className={r.hours > 40 ? "text-red-400" : "text-indigo-400"}>{Math.round((r.hours / 40) * 100)}% CAPACITY</span>
                                                     </div>
-                                                    <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden p-0.5 border border-white/5">
-                                                        <div className={`h-full rounded-full transition-all duration-1000 ${r.hours > 40 ? 'bg-red-500 shadow-[0_0_15px_red]' : 'bg-indigo-500 shadow-[0_0_15px_indigo]'}`} style={{ width: `${Math.min((r.hours / 40) * 100, 100)}%` }}/>
+                                                    <div className="w-full bg-black/40 h-1 rounded-full overflow-hidden border border-white/5">
+                                                        <div className={`h-full transition-all duration-1000 ${r.hours > 40 ? 'bg-red-500' : 'bg-indigo-500/60'}`} style={{ width: `${Math.min((r.hours / 40) * 100, 100)}%` }}/>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <div className="bg-indigo-600/10 p-10 rounded-[2.5rem] border border-indigo-500/20 shadow-2xl flex flex-col">
-                                        <div className="flex justify-between items-end mb-8">
-                                            <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.4em]">Operational Insights</h3>
-                                            <Icon name="zap" size={20} className="text-indigo-400"/>
+                                    <div className="bg-indigo-600/5 p-8 rounded-3xl border border-indigo-500/10 space-y-6">
+                                        <h3 className="text-[8px] font-black text-indigo-400/40 uppercase tracking-[0.4em] mb-8 flex items-center gap-2 text-left"><Icon name="zap" size={10}/> Strategic Insights</h3>
+                                        <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 items-start text-left">
+                                            <Icon name="alert" size={16} className="text-red-400 mt-1 opacity-60"/>
+                                            <p className="text-[9px] font-medium leading-relaxed opacity-50">HR Manager scope reduced: <span className="text-white font-bold uppercase">KLC/TGI</span> removed from Lead reports. Current workload balanced across 5 primary entities.</p>
                                         </div>
-                                        <div className="space-y-6 flex-1">
-                                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/5">
-                                                <Icon name="alert" size={24} className="text-red-400 flex-shrink-0"/>
-                                                <div>
-                                                    <div className="text-[10px] font-black uppercase mb-1">Burnout Risk Alert</div>
-                                                    <p className="text-[11px] font-medium leading-relaxed opacity-60">The HR Executive is currently operating at {Math.round((stats.roleStats.find(r=>r.id==='recruiter').hours / 40) * 100)}% capacity. The 40h yearly tax compliance block is a critical burnout risk.</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/5">
-                                                <Icon name="bar" size={24} className="text-emerald-400 flex-shrink-0"/>
-                                                <div>
-                                                    <div className="text-[10px] font-black uppercase mb-1">Project Impact: HRIS</div>
-                                                    <p className="text-[11px] font-medium leading-relaxed opacity-60">The HRIS Implementation project represents 20% of the Manager's weekly capacity. Success here will reduce administrative workload by an estimated 15% system-wide.</p>
-                                                </div>
-                                            </div>
+                                        <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 items-start text-left">
+                                            <Icon name="trending" size={16} className="text-emerald-400 mt-1 opacity-60"/>
+                                            <p className="text-[9px] font-medium leading-relaxed opacity-50">High technical debt detected in manual tax compliance. Automating this 40h block remains the highest ROI priority for Q2.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -380,15 +374,17 @@
                     ) : (
                         <div className="flex-1 relative glass-panel rounded-[3rem] border border-white/10 overflow-hidden touch-none">
                             <div ref={containerRef} className="absolute inset-0 transition-transform duration-1000" style={{ transform: `scale(${zoomLevel})` }}>
-                                <div className="pointer-events-none opacity-10 h-full w-full">
-                                    <div className="absolute top-0 left-[12%] h-full w-[1px] bg-white/20 flex flex-col justify-center items-center"><span className="text-[9px] font-black uppercase tracking-[0.4em] rotate-90 -translate-x-full whitespace-nowrap">Entities</span></div>
-                                    <div className="absolute top-0 left-[38%] h-full w-[1px] bg-white/20 flex flex-col justify-center items-center"><span className="text-[9px] font-black uppercase tracking-[0.4em] rotate-90 -translate-x-full whitespace-nowrap">HR Roles</span></div>
-                                    <div className="absolute top-0 left-[65%] h-full w-[1px] bg-white/20 flex flex-col justify-center items-center"><span className="text-[9px] font-black uppercase tracking-[0.4em] rotate-90 -translate-x-full whitespace-nowrap">Categories</span></div>
-                                    <div className="absolute top-0 left-[92%] h-full w-[1px] bg-white/20 flex flex-col justify-center items-center"><span className="text-[9px] font-black uppercase tracking-[0.4em] rotate-90 -translate-x-full whitespace-nowrap">Job Details</span></div>
+                                {/* Schematic Column Guides */}
+                                <div className="pointer-events-none opacity-[0.02] h-full w-full">
+                                    <div className="absolute top-0 left-[10%] h-full w-[1px] bg-white"/>
+                                    <div className="absolute top-0 left-[35%] h-full w-[1px] bg-white"/>
+                                    <div className="absolute top-0 left-[62%] h-full w-[1px] bg-white"/>
+                                    <div className="absolute top-0 left-[90%] h-full w-[1px] bg-white"/>
                                 </div>
                                 
+                                {/* Precision Signal Paths */}
                                 {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => v.reportsTo?.map(ent => (
-                                    <Connection key={`${k}-${ent}`} start={coords[ent]} end={coords[k]} color="#6366F1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} visible={true}/>
+                                    <Connection key={`${k}-${ent}`} start={coords[ent]} end={coords[k]} color="#64748b" isReporting={true} active={activeNodeId === k || activeNodeId === ent} isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} visible={true}/>
                                 )))}
 
                                 {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
@@ -402,10 +398,10 @@
                                 {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
                             </div>
 
-                            <div className="absolute bottom-10 right-10 flex bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-1 z-[300] shadow-2xl scale-110" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setZoomLevel(p => Math.max(0.4, p - 0.1))} className="p-3 text-slate-400 hover:text-white transition-all"><Icon name="clock" size={18} className="rotate-180"/></button>
-                                <div className="flex items-center px-4 text-[10px] font-black border-x border-white/10 w-16 justify-center tracking-tighter">{Math.round(zoomLevel * 100)}%</div>
-                                <button onClick={() => setZoomLevel(p => Math.min(2, p + 0.1))} className="p-3 text-slate-400 hover:text-white transition-all"><Icon name="chevron" size={18} className="rotate-0"/></button>
+                            <div className="absolute bottom-8 right-8 flex bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-0.5 z-[300] scale-100" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setZoomLevel(p => Math.max(0.4, p - 0.1))} className="p-2.5 text-slate-600 hover:text-white transition-all"><Icon name="clock" size={14} className="rotate-180"/></button>
+                                <div className="flex items-center px-3 text-[8px] font-black border-x border-white/5 w-14 justify-center tracking-tighter opacity-20">{Math.round(zoomLevel * 100)}%</div>
+                                <button onClick={() => setZoomLevel(p => Math.min(2, p + 0.1))} className="p-2.5 text-slate-600 hover:text-white transition-all"><Icon name="chevron" size={14}/></button>
                             </div>
                         </div>
                     )}
