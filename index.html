@@ -45,6 +45,10 @@
         
         .glass-panel { background: rgba(8, 12, 24, 0.8); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.06); }
         .active-glow { ring: 1px solid rgba(99, 102, 241, 0.8); box-shadow: 0 0 40px rgba(99, 102, 241, 0.15); }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
 <body>
@@ -113,7 +117,7 @@
             const activeNodeId = selectedNode || hoveredNode;
             const isAdmin = viewMode === 'admin';
 
-            const [data] = useState({
+            const [data, setData] = useState({
                 ent_ceg: { type: 'entity', title: "CEG CORP", employeeCount: 30, region: 'Singapore' },
                 ent_enr: { type: 'entity', title: "Enrichment", employeeCount: 125, region: 'Singapore', breakdown: { ft: 30, pt: 60, fl: 35 } },
                 ent_hsk: { type: 'entity', title: "HSK", employeeCount: 10, region: 'Singapore' },
@@ -169,7 +173,7 @@
                 pay_audit_yr: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly", theme: 'slate' }
             });
 
-            const baseCoords = {
+            const [baseCoords, setBaseCoords] = useState({
                 ent_ceg: { x: 10, y: 12 }, ent_enr: { x: 10, y: 24 }, ent_hsk: { x: 10, y: 36 }, ent_klc: { x: 10, y: 48 }, ent_tgi: { x: 10, y: 60 }, ent_vn: { x: 10, y: 72 }, ent_aus: { x: 10, y: 84 },
                 manager: { x: 35, y: 20 }, recruiter: { x: 35, y: 52 }, payroll: { x: 35, y: 84 },
                 cat_m_strat: { x: 62, y: 6 }, cat_m_policy: { x: 62, y: 13 }, cat_m_talent: { x: 62, y: 20 }, cat_m_policy_improve: { x: 62, y: 27 }, cat_m_projects: { x: 62, y: 34 },
@@ -178,6 +182,34 @@
                 hr_onboarding: { x: 90, y: 39 }, hr_offboarding: { x: 90, y: 42 }, hr_job_post: { x: 90, y: 47 }, hr_screening: { x: 90, y: 50 }, hr_records: { x: 90, y: 55 }, hr_work_pass: { x: 90, y: 58 }, hr_claims_verify: { x: 90, y: 65 }, hr_tax_yr_exec: { x: 90, y: 73 },
                 cat_pay_benefits: { x: 62, y: 80 }, cat_pay_monthly: { x: 62, y: 88 }, cat_pay_yearly: { x: 62, y: 96 },
                 pay_insurance: { x: 90, y: 80 }, pay_salary: { x: 90, y: 86 }, pay_claims: { x: 90, y: 89 }, pay_tax_yr: { x: 90, y: 94 }, pay_audit_yr: { x: 90, y: 98 }
+            });
+
+            // Admin Logic
+            const updateNodeData = (id, updates) => {
+                setData(prev => ({
+                    ...prev,
+                    [id]: { ...prev[id], ...updates }
+                }));
+            };
+
+            const addNode = (type) => {
+                const id = `${type}_${Date.now()}`;
+                const title = `New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                const xMap = { entity: 10, role: 35, category: 62, task: 90 };
+                
+                setData(prev => ({ 
+                    ...prev, 
+                    [id]: { type, title, employeeCount: 0, hours: 0, region: 'Singapore', theme: 'indigo' } 
+                }));
+                setBaseCoords(prev => ({ ...prev, [id]: { x: xMap[type], y: 50 } }));
+            };
+
+            const deleteNode = (id) => {
+                setData(prev => {
+                    const newData = { ...prev };
+                    delete newData[id];
+                    return newData;
+                });
             };
 
             const effectiveCoords = useMemo(() => {
@@ -185,8 +217,8 @@
                 const active = data[activeNodeId];
                 if (!active) return baseCoords;
 
-                const focusX = baseCoords[activeNodeId].x;
-                const focusY = baseCoords[activeNodeId].y;
+                const focusX = baseCoords[activeNodeId]?.x || 50;
+                const focusY = baseCoords[activeNodeId]?.y || 50;
                 const newCoords = { ...baseCoords };
 
                 const relatedIds = [];
@@ -225,8 +257,8 @@
 
                 const columnGroups = { 10: [], 35: [], 62: [], 90: [] };
                 relatedIds.forEach(id => {
-                    const bx = baseCoords[id].x;
-                    columnGroups[bx].push(id);
+                    const bx = baseCoords[id]?.x;
+                    if (bx !== undefined) columnGroups[bx].push(id);
                 });
 
                 Object.entries(columnGroups).forEach(([colX, ids]) => {
@@ -239,7 +271,6 @@
                         if (isLeftOfFocus) targetX += 8;
                         if (isRightOfFocus) targetX -= 8;
                         
-                        // ANTI-STACKING LOGIC: Larger spread for entities
                         const spread = data[id].type === 'entity' ? 12 : 7;
                         const offset = (idx - (ids.length - 1) / 2) * spread;
                         
@@ -251,18 +282,18 @@
                 });
 
                 return newCoords;
-            }, [activeNodeId, data]);
+            }, [activeNodeId, data, baseCoords]);
 
             const stats = useMemo(() => {
                 const roles = ['manager', 'recruiter', 'payroll'];
                 const roleStats = roles.map(r => ({
                     id: r,
-                    title: data[r].title,
+                    title: data[r]?.title || r,
                     hours: Object.entries(data).filter(([k,v]) => v.belongsTo === r).reduce((s, [k,v]) => s + Object.values(data).filter(n => n.belongsToCat === k).reduce((ss, t) => ss + (t.hours || 0), 0), 0),
-                    population: (data[r].reportsTo || []).reduce((s, id) => s + (data[id]?.employeeCount || 0), 0)
+                    population: (data[r]?.reportsTo || []).reduce((s, id) => s + (data[id]?.employeeCount || 0), 0)
                 }));
                 const totalHours = roleStats.reduce((s, r) => s + r.hours, 0);
-                const totalStaff = Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + v.employeeCount, 0);
+                const totalStaff = Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + (Number(v.employeeCount) || 0), 0);
                 return { roleStats, totalHours, totalStaff };
             }, [data]);
 
@@ -336,21 +367,74 @@
                             ${activeNodeId && !isRelated && visible ? 'opacity-[0.01] grayscale blur-[8px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}%`, top: `${y}%` }}
                     >
+                        {isAdmin && (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); deleteNode(nodeKey); }}
+                                className="absolute -top-2 -right-2 p-1 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-[120] text-white shadow-lg"
+                            >
+                                <Icon name="trash" size={10} />
+                            </button>
+                        )}
+
                         {isEntity ? (
                             <div className="text-center">
                                 <div className="text-[6px] font-black uppercase opacity-20 mb-1.5 tracking-widest text-left">{nodeData.region}</div>
-                                <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90 text-left">{nodeData.title}</div>
+                                
+                                {isAdmin ? (
+                                    <input 
+                                        type="text"
+                                        value={nodeData.title}
+                                        onChange={(e) => updateNodeData(nodeKey, { title: e.target.value })}
+                                        className="bg-white/5 border-none outline-none font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90 text-left w-full rounded px-1 focus:bg-white/10"
+                                        onClick={e => e.stopPropagation()}
+                                    />
+                                ) : (
+                                    <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90 text-left">{nodeData.title}</div>
+                                )}
+
                                 <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg font-bold' : 'bg-white/5'}`}>
-                                    <Icon name="users" size={10}/><span className="text-[11px] font-black">{nodeData.employeeCount}</span>
+                                    <Icon name="users" size={10}/>
+                                    {isAdmin ? (
+                                        <input 
+                                            type="number"
+                                            value={nodeData.employeeCount}
+                                            onChange={(e) => updateNodeData(nodeKey, { employeeCount: e.target.value })}
+                                            className="bg-transparent border-none outline-none text-[11px] font-black w-10 text-center focus:ring-1 ring-white/20 rounded"
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    ) : (
+                                        <span className="text-[11px] font-black">{nodeData.employeeCount}</span>
+                                    )}
                                 </div>
                                 
                                 {nodeData.breakdown && (
-                                    <div className="mt-3 pt-2.5 border-t border-white/5 flex justify-between items-center text-[7px] font-black opacity-30 uppercase tracking-tighter">
-                                        <div className="flex flex-col items-center"><span>FT</span><span className="text-white/60 font-bold">{nodeData.breakdown.ft}</span></div>
+                                    <div className="mt-3 pt-2.5 border-t border-white/5 flex justify-between items-center text-[7px] font-black uppercase tracking-tighter">
+                                        <div className="flex flex-col items-center">
+                                            <span>FT</span>
+                                            {isAdmin ? (
+                                                <input type="number" value={nodeData.breakdown.ft} onChange={(e) => updateNodeData(nodeKey, { breakdown: { ...nodeData.breakdown, ft: e.target.value } })} className="bg-transparent text-center w-6 text-white/60 font-bold border-none outline-none" onClick={e => e.stopPropagation()}/>
+                                            ) : (
+                                                <span className="text-white/60 font-bold">{nodeData.breakdown.ft}</span>
+                                            )}
+                                        </div>
                                         <div className="w-[1px] h-3 bg-white/10" />
-                                        <div className="flex flex-col items-center"><span>PT</span><span className="text-white/60 font-bold">{nodeData.breakdown.pt}</span></div>
+                                        <div className="flex flex-col items-center">
+                                            <span>PT</span>
+                                            {isAdmin ? (
+                                                <input type="number" value={nodeData.breakdown.pt} onChange={(e) => updateNodeData(nodeKey, { breakdown: { ...nodeData.breakdown, pt: e.target.value } })} className="bg-transparent text-center w-6 text-white/60 font-bold border-none outline-none" onClick={e => e.stopPropagation()}/>
+                                            ) : (
+                                                <span className="text-white/60 font-bold">{nodeData.breakdown.pt}</span>
+                                            )}
+                                        </div>
                                         <div className="w-[1px] h-3 bg-white/10" />
-                                        <div className="flex flex-col items-center"><span>FL</span><span className="text-white/60 font-bold">{nodeData.breakdown.fl}</span></div>
+                                        <div className="flex flex-col items-center">
+                                            <span>FL</span>
+                                            {isAdmin ? (
+                                                <input type="number" value={nodeData.breakdown.fl} onChange={(e) => updateNodeData(nodeKey, { breakdown: { ...nodeData.breakdown, fl: e.target.value } })} className="bg-transparent text-center w-6 text-white/60 font-bold border-none outline-none" onClick={e => e.stopPropagation()}/>
+                                            ) : (
+                                                <span className="text-white/60 font-bold">{nodeData.breakdown.fl}</span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -413,6 +497,20 @@
                         </div>
                     </header>
 
+                    {isAdmin && (
+                        <div className="relative z-[250] flex gap-3 mb-6 animate-popup">
+                            <button onClick={() => addNode('entity')} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors">
+                                <Icon name="plus" size={12} /> Add Entity
+                            </button>
+                            <button onClick={() => addNode('role')} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors">
+                                <Icon name="plus" size={12} /> Add Role
+                            </button>
+                            <button onClick={() => addNode('category')} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors">
+                                <Icon name="plus" size={12} /> Add Category
+                            </button>
+                        </div>
+                    )}
+
                     {viewMode === 'analytics' ? (
                         <div className="flex-1 glass-panel rounded-[2.5rem] p-8 lg:p-12 overflow-y-auto custom-scrollbar animate-popup">
                             <div className="max-w-6xl mx-auto space-y-8 text-left">
@@ -427,7 +525,7 @@
                                     </div>
                                     <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
                                         <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">HR:Staff Efficiency</div>
-                                        <div className="text-3xl font-black">1:{Math.round(stats.totalStaff / 3)}</div>
+                                        <div className="text-3xl font-black">1:{stats.totalStaff > 0 ? Math.round(stats.totalStaff / 3) : 0}</div>
                                     </div>
                                     <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
                                         <div className="text-[7px] font-black opacity-20 mb-3 uppercase tracking-widest">Global Regions</div>
