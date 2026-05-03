@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #02040a; color: #f1f5f9; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #010206; color: #f1f5f9; overflow-x: hidden; }
         
         @keyframes signalFlow {
             from { stroke-dashoffset: 40; }
@@ -18,8 +18,8 @@
         }
 
         .animate-signal {
-            stroke-dasharray: 6, 18; 
-            animation: signalFlow 2.5s linear infinite;
+            stroke-dasharray: 4, 16; 
+            animation: signalFlow 1.8s linear infinite;
         }
 
         @keyframes fadeInScale {
@@ -33,17 +33,18 @@
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
         
         .node-transition { 
             transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
                         filter 0.4s ease,
-                        background-color 0.3s ease; 
+                        background-color 0.3s ease,
+                        border-color 0.3s ease; 
         }
         
-        .glass-panel { background: rgba(10, 15, 30, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .active-ring { ring: 1px solid rgba(99, 102, 241, 0.6); box-shadow: 0 0 25px rgba(99, 102, 241, 0.1); }
+        .glass-panel { background: rgba(8, 12, 24, 0.8); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.06); }
+        .active-glow { ring: 1px solid rgba(99, 102, 241, 0.8); box-shadow: 0 0 40px rgba(99, 102, 241, 0.15); }
     </style>
 </head>
 <body>
@@ -78,9 +79,8 @@
             const midX = (start.x + end.x) / 2;
             const path = `M ${start.x} ${start.y} C ${midX} ${start.y}, ${midX} ${end.y}, ${end.x} ${end.y}`;
             
-            // Ultra-thin refinement: 0.05 for background, 0.8 for active
             const baseOpacity = visible ? (active ? 'opacity-100' : (isFaint ? 'opacity-[0.01]' : (isReporting ? 'opacity-10' : 'opacity-8'))) : 'opacity-0';
-            const strokeWidth = active ? "0.8" : "0.05"; 
+            const strokeWidth = active ? "0.8" : "0.025"; 
 
             return (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -90,15 +90,13 @@
                         stroke={color} 
                         strokeWidth={strokeWidth} 
                         strokeLinecap="round" 
-                        strokeDasharray={isReporting && !active ? "0.3 2" : "none"}
+                        strokeDasharray={isReporting && !active ? "0.2 1.5" : "none"}
                         className={`${baseOpacity} transition-all duration-500 ease-in-out ${pulsing && active ? 'animate-signal' : ''}`}
                     />
-                    
-                    {/* Tiny Terminal Pins for active path */}
                     {active && (
                         <React.Fragment>
-                            <circle cx={start.x} cy={start.y} r="0.25" fill={color} className="animate-popup" />
-                            <circle cx={end.x} cy={end.y} r="0.25" fill={color} className="animate-popup" />
+                            <circle cx={start.x} cy={start.y} r="0.2" fill={color} className="animate-popup" />
+                            <circle cx={end.x} cy={end.y} r="0.2" fill={color} className="animate-popup" />
                         </React.Fragment>
                     )}
                 </svg>
@@ -107,7 +105,7 @@
 
         function App() {
             const [viewMode, setViewMode] = useState('presentation');
-            const [zoomLevel, setZoomLevel] = useState(0.85);
+            const [zoomLevel, setZoomLevel] = useState(0.8);
             const [hoveredNode, setHoveredNode] = useState(null);
             const [selectedNode, setSelectedNode] = useState(null);
             const containerRef = useRef(null);
@@ -124,7 +122,6 @@
                 ent_vn: { type: 'entity', title: "Vietnam", employeeCount: 100, region: 'Overseas' },
                 ent_aus: { type: 'entity', title: "Australia", employeeCount: 0, region: 'Overseas' },
                 
-                // Manager no longer covers KLC and TGI
                 manager: { type: 'role', title: "HR Manager", subtitle: "Lead", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_vn', 'ent_aus'] },
                 recruiter: { type: 'role', title: "HR Executive", subtitle: "Execution", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk'] },
                 payroll: { type: 'role', title: "Payroll Specialist", subtitle: "Support", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_klc', 'ent_tgi'] },
@@ -216,22 +213,41 @@
 
                 let isRelated = false;
                 if (activeNodeId) {
-                    if (nodeKey === activeNodeId) isRelated = true;
-                    else if (isEntity && activeData?.type === 'role') isRelated = activeData.reportsTo?.includes(nodeKey);
-                    else if (isCategory && activeData?.type === 'role') isRelated = nodeData.belongsTo === activeNodeId;
-                    else if (isRole && (activeData?.type === 'category' || activeData?.type === 'task')) {
-                         const catId = activeData.type === 'task' ? activeData.belongsToCat : activeNodeId;
-                         isRelated = data[catId]?.belongsTo === nodeKey;
+                    if (nodeKey === activeNodeId) {
+                        isRelated = true;
+                    } else if (isEntity) {
+                        // Case: Active is a Role
+                        if (activeData?.type === 'role' && activeData.reportsTo?.includes(nodeKey)) isRelated = true;
+                        // Case: Active is a Category
+                        else if (activeData?.type === 'category') {
+                            const roleId = activeData.belongsTo;
+                            if (data[roleId]?.reportsTo?.includes(nodeKey)) isRelated = true;
+                        }
+                        // Case: Active is a Task (Bug fix requested)
+                        else if (activeData?.type === 'task') {
+                            const catId = activeData.belongsToCat;
+                            const roleId = data[catId]?.belongsTo;
+                            if (data[roleId]?.reportsTo?.includes(nodeKey)) isRelated = true;
+                        }
+                    } else if (isCategory && activeData?.type === 'role') {
+                        isRelated = nodeData.belongsTo === activeNodeId;
+                    } else if (isRole) {
+                        if (activeData?.type === 'category' || activeData?.type === 'task') {
+                            const catId = activeData.type === 'task' ? activeData.belongsToCat : activeNodeId;
+                            isRelated = data[catId]?.belongsTo === nodeKey;
+                        }
+                    } else if (nodeData.type === 'task' && activeData?.type === 'category') {
+                        isRelated = nodeData.belongsToCat === activeNodeId;
+                    } else if (isCategory && activeData?.type === 'task') {
+                        isRelated = activeData.belongsToCat === nodeKey;
                     }
-                    else if (nodeData.type === 'task' && activeData?.type === 'category') isRelated = nodeData.belongsToCat === activeNodeId;
-                    else if (isCategory && activeData?.type === 'task') isRelated = activeData.belongsToCat === nodeKey;
                 }
 
                 const themes = {
                     indigo: 'bg-slate-900 border-indigo-500/10 text-indigo-100 hover:border-indigo-500/20',
                     emerald: 'bg-slate-900 border-emerald-500/10 text-emerald-100 hover:border-emerald-500/20',
                     slate: 'bg-slate-900 border-slate-600/10 text-slate-100 hover:border-slate-600/20',
-                    entity: 'bg-slate-950 border-white/5 text-white hover:border-white/10'
+                    entity: 'bg-slate-950 border-white/5 text-white hover:border-white/20'
                 };
 
                 const roleTotal = isRole ? stats.roleStats.find(r => r.id === nodeKey)?.hours : 0;
@@ -243,19 +259,19 @@
                         onMouseLeave={() => setHoveredNode(null)} 
                         className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-transition backdrop-blur-3xl border 
                             ${isEntity ? themes.entity : (themes[nodeData.theme] || themes.indigo)} 
-                            ${isEntity ? 'w-32 p-2.5 rounded-xl' : (isRole ? 'w-48 p-3.5 rounded-2xl' : (isCategory ? 'w-40 p-2 rounded-xl' : 'w-32 p-1 rounded-full'))} 
-                            ${isFocused ? 'active-ring bg-slate-800 z-[110] scale-[1.02]' : 'z-10'} 
-                            ${isRelated && !isFocused ? 'border-indigo-500/40 z-[100]' : ''} 
+                            ${isEntity ? 'w-44 p-4 rounded-xl shadow-lg' : (isRole ? 'w-52 p-4 rounded-2xl' : (isCategory ? 'w-40 p-2 rounded-xl' : 'w-32 p-1 rounded-full'))} 
+                            ${isFocused ? 'active-glow bg-slate-800 z-[110] scale-[1.03]' : 'z-10'} 
+                            ${isRelated && !isFocused ? 'border-indigo-500/60 z-[100]' : ''} 
                             ${visible ? 'opacity-100' : 'opacity-0 scale-95 pointer-events-none'}
-                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.02] grayscale blur-[3px]' : 'cursor-pointer'}`} 
+                            ${activeNodeId && !isRelated && visible ? 'opacity-[0.015] grayscale blur-[5px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}%`, top: `${y}%` }}
                     >
                         {isEntity ? (
                             <div className="text-center">
-                                <div className="text-[5px] font-black uppercase opacity-20 mb-1 tracking-widest">{nodeData.region}</div>
-                                <div className="font-bold text-[9px] uppercase tracking-tighter mb-1.5">{nodeData.title}</div>
-                                <div className={`w-full py-0.5 rounded flex items-center justify-center gap-1 transition-all ${isRelated ? 'bg-indigo-600/60' : 'bg-white/5'}`}>
-                                    <Icon name="users" size={7}/><span className="text-[9px] font-black">{nodeData.employeeCount}</span>
+                                <div className="text-[6px] font-black uppercase opacity-20 mb-1.5 tracking-widest">{nodeData.region}</div>
+                                <div className="font-bold text-[13px] uppercase tracking-tighter mb-2 leading-tight text-white/90">{nodeData.title}</div>
+                                <div className={`w-full py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${isRelated ? 'bg-indigo-600/90 shadow-lg' : 'bg-white/5'}`}>
+                                    <Icon name="users" size={10}/><span className="text-[11px] font-black">{nodeData.employeeCount}</span>
                                 </div>
                             </div>
                         ) : isRole ? (
@@ -312,7 +328,7 @@
                         </div>
                         <div className="flex gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/5">
                             {['admin', 'presentation', 'analytics'].map(m => (
-                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-6 py-1.5 rounded-xl text-[7px] font-black transition-all tracking-widest ${viewMode === m ? 'bg-white/10 text-white border border-white/10' : 'text-slate-500 hover:text-white'}`}>{m.toUpperCase()}</button>
+                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-6 py-1.5 rounded-xl text-[7px] font-black transition-all tracking-widest ${viewMode === m ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}>{m.toUpperCase()}</button>
                             ))}
                         </div>
                     </header>
@@ -374,8 +390,8 @@
                     ) : (
                         <div className="flex-1 relative glass-panel rounded-[3rem] border border-white/10 overflow-hidden touch-none">
                             <div ref={containerRef} className="absolute inset-0 transition-transform duration-1000" style={{ transform: `scale(${zoomLevel})` }}>
-                                {/* Schematic Column Guides */}
-                                <div className="pointer-events-none opacity-[0.02] h-full w-full">
+                                {/* Column Alignment Guides */}
+                                <div className="pointer-events-none opacity-[0.015] h-full w-full">
                                     <div className="absolute top-0 left-[10%] h-full w-[1px] bg-white"/>
                                     <div className="absolute top-0 left-[35%] h-full w-[1px] bg-white"/>
                                     <div className="absolute top-0 left-[62%] h-full w-[1px] bg-white"/>
@@ -384,7 +400,7 @@
                                 
                                 {/* Precision Signal Paths */}
                                 {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => v.reportsTo?.map(ent => (
-                                    <Connection key={`${k}-${ent}`} start={coords[ent]} end={coords[k]} color="#64748b" isReporting={true} active={activeNodeId === k || activeNodeId === ent} isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} visible={true}/>
+                                    <Connection key={`${k}-${ent}`} start={coords[ent]} end={coords[k]} color="#64748b" isReporting={true} active={activeNodeId === k || activeNodeId === ent || (data[activeNodeId]?.type === 'task' && data[data[activeNodeId].belongsToCat]?.belongsTo === k && data[k].reportsTo?.includes(ent))} isFaint={activeNodeId && activeNodeId !== k && activeNodeId !== ent} visible={true}/>
                                 )))}
 
                                 {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
@@ -398,7 +414,7 @@
                                 {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
                             </div>
 
-                            <div className="absolute bottom-8 right-8 flex bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-0.5 z-[300] scale-100" onClick={e => e.stopPropagation()}>
+                            <div className="absolute bottom-8 right-8 flex bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-0.5 z-[300] scale-100 shadow-2xl" onClick={e => e.stopPropagation()}>
                                 <button onClick={() => setZoomLevel(p => Math.max(0.4, p - 0.1))} className="p-2.5 text-slate-600 hover:text-white transition-all"><Icon name="clock" size={14} className="rotate-180"/></button>
                                 <div className="flex items-center px-3 text-[8px] font-black border-x border-white/5 w-14 justify-center tracking-tighter opacity-20">{Math.round(zoomLevel * 100)}%</div>
                                 <button onClick={() => setZoomLevel(p => Math.min(2, p + 0.1))} className="p-2.5 text-slate-600 hover:text-white transition-all"><Icon name="chevron" size={14}/></button>
