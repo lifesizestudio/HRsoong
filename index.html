@@ -43,6 +43,7 @@
         .active-glow {
             border-color: #6366f1 !important;
             box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 200 !important;
         }
 
         .map-container {
@@ -70,7 +71,8 @@
                 users: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2m15-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"/>,
                 clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
                 refresh: <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>,
-                chevron: <polyline points="9 18 15 12 9 6" />
+                chevron: <polyline points="9 18 15 12 9 6" />,
+                calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>
             };
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -83,7 +85,7 @@
             if (!start || !end) return null;
             const midY = (start.y + end.y) / 2;
             const path = `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`;
-            const opacity = active ? 'opacity-100' : (isFaint ? 'opacity-[0.03]' : (isReporting ? 'opacity-10' : 'opacity-20'));
+            const opacity = active ? 'opacity-100' : (isFaint ? 'opacity-[0.08]' : (isReporting ? 'opacity-10' : 'opacity-20'));
             
             return (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 2400 3000" preserveAspectRatio="none">
@@ -113,6 +115,7 @@
             const activeNodeId = selectedNode || hoveredNode;
             const isAdmin = viewMode === 'admin';
 
+            // --- STRATEGIC AUDITED DATASET ---
             const [data, setData] = useState({
                 ent_ceg: { type: 'entity', title: "CEG CORP", employeeCount: 30, region: 'Singapore' },
                 ent_enr: { type: 'entity', title: "Enrichment", employeeCount: 125, region: 'Singapore', breakdown: { ft: 30, pt: 60, fl: 35 } },
@@ -128,8 +131,10 @@
                 
                 cat_m_strat: { type: 'category', title: "Strategic Planning", belongsTo: 'manager' },
                 cat_m_policy: { type: 'category', title: "Policy & Compliance", belongsTo: 'manager' },
-                cat_m_talent: { type: 'category', title: "Talent & Performance", belongsTo: 'manager' },
+                cat_m_payroll_oversight: { type: 'category', title: "Payroll Oversight", belongsTo: 'manager' },
+                cat_m_meetings: { type: 'category', title: "Meeting Attendance", belongsTo: 'manager' }, // NEW MODULE FOR MANAGER
                 cat_m_projects: { type: 'category', title: "HR Projects", belongsTo: 'manager' },
+                
                 cat_lifecycle: { type: 'category', title: "Employee Lifecycle", belongsTo: 'recruiter' },
                 cat_recruitment: { type: 'category', title: "Recruitment", belongsTo: 'recruiter' },
                 cat_ops: { type: 'category', title: "Operations", belongsTo: 'recruiter' },
@@ -137,14 +142,19 @@
                 cat_pay_monthly: { type: 'category', title: "Monthly Payroll", belongsTo: 'payroll' },
                 cat_pay_yearly: { type: 'category', title: "Yearly Compliance", belongsTo: 'payroll' },
 
+                // Tasks - Manager
                 m_strat_leadership: { type: 'task', title: "Strategic Leadership", hours: 15, belongsToCat: "cat_m_strat" },
                 m_workforce: { type: 'task', title: "Workforce Planning", hours: 5, belongsToCat: "cat_m_strat" },
-                m_budget: { type: 'task', title: "HR Budgeting", hours: 4, belongsToCat: "cat_m_strat" },
                 m_handbook: { type: 'task', title: "Handbook & Policy", hours: 6, belongsToCat: "cat_m_policy" },
                 m_legal: { type: 'task', title: "Legal Compliance", hours: 4, belongsToCat: "cat_m_policy" },
-                m_appraisal: { type: 'task', title: "Performance Framework", hours: 5, belongsToCat: "cat_m_talent" },
+                m_payroll_audit: { type: 'task', title: "Final Payroll Audit", hours: 4, belongsToCat: "cat_m_payroll_oversight" },
+                m_vendor_mgmt: { type: 'task', title: "Vendor Management", hours: 3, belongsToCat: "cat_m_payroll_oversight" },
+                m_compliance_review: { type: 'task', title: "Compliance Review", hours: 5, belongsToCat: "cat_m_payroll_oversight" },
+                m_attend_meetings: { type: 'task', title: "Attend Meetings", hours: 12, belongsToCat: "cat_m_meetings" }, // MOVED TO MANAGER
+                m_action_tracking: { type: 'task', title: "Action Tracking", hours: 4, belongsToCat: "cat_m_meetings" }, // MOVED TO MANAGER
                 m_hris: { type: 'task', title: "HRIS Implementation", hours: 8, belongsToCat: "cat_m_projects" },
 
+                // Tasks - Executive
                 hr_onboarding: { type: 'task', title: "Onboarding", hours: 4, belongsToCat: "cat_lifecycle" },
                 hr_offboarding: { type: 'task', title: "Offboarding", hours: 3, belongsToCat: "cat_lifecycle" },
                 hr_hsk_recruit: { type: 'task', title: "HSK Recruitment", hours: 40, belongsToCat: "cat_recruitment" },
@@ -155,6 +165,7 @@
                 hr_events: { type: 'task', title: "Engagement Events", hours: 8, belongsToCat: "cat_engagement" },
                 hr_welfare: { type: 'task', title: "Staff Welfare", hours: 4, belongsToCat: "cat_engagement" },
 
+                // Tasks - Payroll
                 pay_salary: { type: 'task', title: "Salary Processing", hours: 25, belongsToCat: "cat_pay_monthly" },
                 pay_claims: { type: 'task', title: "Claims Processing", hours: 10, belongsToCat: "cat_pay_monthly" },
                 pay_bank: { type: 'task', title: "Bank Coordination", hours: 5, belongsToCat: "cat_pay_monthly" },
@@ -164,50 +175,82 @@
                 pay_audit: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly" }
             });
 
+            // REBALANCED CORE GRID
             const baseCoords = useMemo(() => ({
                 ent_ceg: { x: 300, y: 200 }, ent_enr: { x: 600, y: 200 }, ent_hsk: { x: 900, y: 200 }, ent_klc: { x: 1200, y: 200 }, ent_tgi: { x: 1500, y: 200 }, ent_vn: { x: 1800, y: 200 }, ent_aus: { x: 2100, y: 200 },
-                manager: { x: 600, y: 550 }, recruiter: { x: 1200, y: 550 }, payroll: { x: 1800, y: 550 },
-                cat_m_strat: { x: 400, y: 850 }, cat_m_policy: { x: 550, y: 850 }, cat_m_talent: { x: 700, y: 850 }, cat_m_projects: { x: 850, y: 850 },
-                cat_lifecycle: { x: 1000, y: 850 }, cat_recruitment: { x: 1125, y: 850 }, cat_ops: { x: 1250, y: 850 }, cat_engagement: { x: 1375, y: 850 },
+                
+                manager: { x: 600, y: 550 }, 
+                recruiter: { x: 1200, y: 550 }, 
+                payroll: { x: 1800, y: 550 },
+
+                cat_m_strat: { x: 400, y: 850 }, cat_m_policy: { x: 500, y: 850 }, cat_m_payroll_oversight: { x: 600, y: 850 }, cat_m_meetings: { x: 700, y: 850 }, cat_m_projects: { x: 800, y: 850 },
+                cat_lifecycle: { x: 1050, y: 850 }, cat_recruitment: { x: 1150, y: 850 }, cat_ops: { x: 1250, y: 850 }, cat_engagement: { x: 1350, y: 850 },
                 cat_pay_monthly: { x: 1650, y: 850 }, cat_pay_yearly: { x: 1950, y: 850 },
-                m_strat_leadership: { x: 350, y: 1150 }, m_workforce: { x: 350, y: 1230 }, m_budget: { x: 350, y: 1310 },
-                m_handbook: { x: 550, y: 1150 }, m_legal: { x: 550, y: 1230 },
-                m_appraisal: { x: 700, y: 1150 }, m_hris: { x: 850, y: 1150 },
-                hr_onboarding: { x: 1000, y: 1150 }, hr_offboarding: { x: 1000, y: 1230 },
-                hr_hsk_recruit: { x: 1125, y: 1150 }, hr_screening: { x: 1125, y: 1230 },
-                hr_workpass: { x: 1250, y: 1150 }, hr_records: { x: 1250, y: 1230 }, hr_training: { x: 1250, y: 1310 },
-                hr_events: { x: 1375, y: 1150 }, hr_welfare: { x: 1375, y: 1230 },
-                pay_salary: { x: 1600, y: 1150 }, pay_claims: { x: 1600, y: 1230 }, pay_bank: { x: 1600, y: 1310 }, pay_reporting: { x: 1600, y: 1390 },
-                pay_tax_yearly: { x: 1950, y: 1150 }, pay_benefits: { x: 1950, y: 1230 }, pay_audit: { x: 1950, y: 1310 }
+
+                m_strat_leadership: { x: 400, y: 1100 }, m_workforce: { x: 400, y: 1180 }, 
+                m_handbook: { x: 500, y: 1100 }, m_legal: { x: 500, y: 1180 },
+                m_payroll_audit: { x: 600, y: 1100 }, m_vendor_mgmt: { x: 600, y: 1180 }, m_compliance_review: { x: 600, y: 1260 },
+                m_attend_meetings: { x: 700, y: 1100 }, m_action_tracking: { x: 700, y: 1180 },
+                m_hris: { x: 800, y: 1100 },
+                hr_onboarding: { x: 1050, y: 1100 }, hr_offboarding: { x: 1050, y: 1180 },
+                hr_hsk_recruit: { x: 1150, y: 1100 }, hr_screening: { x: 1150, y: 1180 },
+                hr_workpass: { x: 1250, y: 1100 }, hr_records: { x: 1250, y: 1180 }, hr_training: { x: 1250, y: 1260 },
+                hr_events: { x: 1350, y: 1100 }, hr_welfare: { x: 1350, y: 1180 },
+                pay_salary: { x: 1650, y: 1100 }, pay_claims: { x: 1650, y: 1180 }, pay_bank: { x: 1650, y: 1260 }, pay_reporting: { x: 1650, y: 1340 },
+                pay_tax_yearly: { x: 1950, y: 1100 }, pay_benefits: { x: 1950, y: 1180 }, pay_audit: { x: 1950, y: 1260 }
             }), []);
 
+            // DYNAMIC LAYOUT ENGINE
             const effectiveCoords = useMemo(() => {
                 const newCoords = { ...baseCoords };
                 if (!activeNodeId) return newCoords;
-                const focusX = baseCoords[activeNodeId]?.x || 1200;
+                
                 const active = data[activeNodeId];
+                const focusX = baseCoords[activeNodeId]?.x || 1200;
+                const relevantCategories = [];
                 const relevantTasks = [];
+                let focusRoleId = null;
+
                 if (active.type === 'role') {
+                    focusRoleId = activeNodeId;
                     Object.entries(data).forEach(([id, v]) => { 
                         if (v.belongsTo === activeNodeId) {
+                            relevantCategories.push(id);
                             Object.entries(data).forEach(([tid, tv]) => { if (tv.belongsToCat === id) relevantTasks.push(tid); });
                         }
                     });
                 } else if (active.type === 'category') {
+                    focusRoleId = active.belongsTo;
+                    relevantCategories.push(activeNodeId);
                     Object.entries(data).forEach(([id, v]) => { if (v.belongsToCat === activeNodeId) relevantTasks.push(id); });
                 } else if (active.type === 'task') {
-                    Object.entries(data).forEach(([tid, tv]) => { if (tv.belongsToCat === active.belongsToCat) relevantTasks.push(tid); });
+                    const catId = active.belongsToCat;
+                    relevantCategories.push(catId);
+                    focusRoleId = data[catId]?.belongsTo;
+                    Object.entries(data).forEach(([tid, tv]) => { if (tv.belongsToCat === catId) relevantTasks.push(tid); });
                 }
-                if (relevantTasks.length > 0) {
-                    const tasksPerRow = Math.min(4, relevantTasks.length);
-                    const hSpace = 240, vSpace = 85;
-                    relevantTasks.forEach((tid, idx) => {
-                        const row = Math.floor(idx / tasksPerRow), col = idx % tasksPerRow;
-                        const rowSize = Math.min(tasksPerRow, relevantTasks.length - row * tasksPerRow);
-                        const startX = focusX - ((rowSize - 1) * hSpace) / 2;
-                        newCoords[tid] = { x: startX + (col * hSpace), y: 1150 + (row * vSpace) };
-                    });
+
+                if (focusRoleId) {
+                    newCoords[focusRoleId] = { x: focusX, y: 550 };
+                    if (relevantCategories.length > 0) {
+                        const catHSpace = 240;
+                        const startX = focusX - ((relevantCategories.length - 1) * catHSpace) / 2;
+                        relevantCategories.forEach((cid, idx) => {
+                            newCoords[cid] = { x: startX + (idx * catHSpace), y: 780 };
+                        });
+                    }
+                    if (relevantTasks.length > 0) {
+                        const tasksPerRow = Math.min(4, relevantTasks.length);
+                        const hSpace = 250, vSpace = 85;
+                        relevantTasks.forEach((tid, idx) => {
+                            const row = Math.floor(idx / tasksPerRow), col = idx % tasksPerRow;
+                            const rowSize = Math.min(tasksPerRow, relevantTasks.length - row * tasksPerRow);
+                            const startX = focusX - ((rowSize - 1) * hSpace) / 2;
+                            newCoords[tid] = { x: startX + (col * hSpace), y: 1000 + (row * vSpace) };
+                        });
+                    }
                 }
+                
                 return newCoords;
             }, [activeNodeId, data, baseCoords]);
 
@@ -246,17 +289,24 @@
                 const activeData = activeNodeId ? data[activeNodeId] : null;
                 const isFocused = activeNodeId === nodeKey;
                 const isTask = nodeData.type === 'task';
-                const isVisible = viewMode === 'admin' || !isTask || (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
+                
+                let isVisible = true;
+                if (viewMode !== 'admin' && isTask) {
+                    isVisible = (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
+                }
+
                 const { x, y } = effectiveCoords[nodeKey] || { x: 1200, y: 500 };
 
                 let isRelated = false;
                 if (activeNodeId) {
                     if (nodeKey === activeNodeId) isRelated = true;
                     else if (nodeData.type === 'entity' && activeData?.reportsTo?.includes(nodeKey)) isRelated = true;
-                    else if (nodeData.type === 'category' && nodeData.belongsTo === activeNodeId) isRelated = true;
-                    else if (nodeData.type === 'role' && (activeData?.reportsTo?.includes(nodeKey) || (activeData?.type === 'category' && activeData.belongsTo === nodeKey) || (isTask && data[nodeData.belongsToCat]?.belongsTo === nodeKey))) isRelated = true;
+                    else if (nodeData.type === 'category' && (nodeData.belongsTo === activeNodeId || activeData?.belongsToCat === nodeKey)) isRelated = true;
+                    else if (nodeData.type === 'role' && (activeData?.reportsTo?.includes(nodeKey) || activeData?.belongsTo === nodeKey || (isTask && data[nodeData.belongsToCat]?.belongsTo === nodeKey))) isRelated = true;
                     else if (isTask && (nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) isRelated = true;
                 }
+
+                const isDimmed = activeNodeId && !isRelated;
 
                 return (
                     <div key={nodeKey} 
@@ -265,15 +315,15 @@
                         onMouseLeave={() => setHoveredNode(null)} 
                         className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-transition node-card
                             ${nodeData.type === 'entity' ? 'w-64 p-8 rounded-3xl' : (nodeData.type === 'role' ? 'w-80 p-8 rounded-[3.5rem]' : (nodeData.type === 'category' ? 'w-56 p-5 rounded-2xl' : 'w-52 p-4 rounded-full'))} 
-                            ${isFocused ? 'active-glow scale-[1.05] z-[150]' : 'z-10'} 
-                            ${isRelated && !isFocused ? 'border-indigo-500/50 z-[100] scale-[1.02]' : ''} 
+                            ${isFocused ? 'active-glow scale-[1.08] z-[300]' : 'z-10'} 
+                            ${isRelated && !isFocused ? 'border-indigo-500 z-[200] scale-[1.04] shadow-xl' : ''} 
                             ${isVisible ? 'opacity-100' : 'opacity-0 scale-90 pointer-events-none'}
-                            ${activeNodeId && !isRelated && isVisible ? 'opacity-[0.04] grayscale-[0.8] blur-[4px]' : 'cursor-pointer'}`} 
+                            ${isDimmed && isVisible ? 'opacity-[0.15] grayscale-[0.6] blur-[2px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}px`, top: `${y}px` }}
                     >
                         {nodeData.type === 'entity' ? (
                             <div className="text-left">
-                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest opacity-60 leading-none">{nodeData.region}</div>
+                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest leading-none">{nodeData.region}</div>
                                 <div className="font-black text-[28px] uppercase tracking-tighter mb-5 text-slate-900 leading-none">{nodeData.title}</div>
                                 <div className={`w-full py-4 rounded-2xl flex items-center justify-center gap-4 transition-all ${isRelated ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
                                     <Icon name="users" size={20}/><span className="text-2xl font-black">{nodeData.employeeCount}</span>
@@ -291,7 +341,7 @@
                         ) : nodeData.type === 'role' ? (
                             <div className="flex flex-col text-left">
                                 <div className="flex justify-between items-center mb-6">
-                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none">Primary Job</div>
+                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none">Management Level</div>
                                     <div className="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 text-[11px] font-bold border border-indigo-100">P: {stats.roleStats.find(r => r.id === nodeKey)?.population}</div>
                                 </div>
                                 <div className="font-black text-[32px] leading-none mb-8 uppercase tracking-tighter text-slate-900">{nodeData.title}</div>
@@ -308,18 +358,18 @@
                         ) : nodeData.type === 'category' ? (
                             <div className="flex justify-between items-center text-left">
                                 <div className="truncate pr-4">
-                                    <div className="text-[12px] font-black uppercase text-slate-700 mb-1 truncate leading-none">{nodeData.title}</div>
-                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Functional Module</div>
+                                    <div className="text-[14px] font-black uppercase text-slate-800 mb-1 truncate leading-none">{nodeData.title}</div>
+                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Strategic Module</div>
                                 </div>
                                 <div className={`p-2.5 rounded-xl transition-all ${isRelated ? 'bg-indigo-100 text-indigo-600 shadow-sm' : 'bg-slate-100 text-slate-400'}`}>
-                                    <Icon name="chevron" size={16} className={isFocused ? 'rotate-90' : ''}/>
+                                    <Icon name={nodeKey === 'cat_m_meetings' ? "calendar" : "chevron"} size={16} className={isFocused ? 'rotate-90' : ''}/>
                                 </div>
                             </div>
                         ) : (
                             <div className="flex items-center gap-4 px-2 text-left">
-                                <div className="p-3 bg-indigo-50 rounded-full text-indigo-600 shadow-sm"><Icon name="clock" size={16}/></div>
+                                <div className={`p-3 rounded-full shadow-sm ${isRelated ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 text-indigo-400'}`}><Icon name="clock" size={16}/></div>
                                 <div className="truncate flex-1">
-                                    <div className="text-[12px] font-bold truncate uppercase text-slate-700 leading-none mb-1.5">{nodeData.title}</div>
+                                    <div className="text-[13px] font-bold truncate uppercase text-slate-700 leading-none mb-1.5">{nodeData.title}</div>
                                     <div className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter leading-none">{nodeData.hours} HRS</div>
                                 </div>
                             </div>
@@ -330,12 +380,12 @@
 
             return (
                 <div className="min-h-screen relative flex flex-col p-8 lg:p-12" onClick={() => setSelectedNode(null)}>
-                    <header className="relative z-[200] flex flex-col lg:flex-row justify-between items-center gap-8 bg-white p-8 rounded-[3rem] mb-12 shadow-xl border border-slate-200">
+                    <header className="relative z-[500] flex flex-col lg:flex-row justify-between items-center gap-8 bg-white p-8 rounded-[3rem] mb-12 shadow-xl border border-slate-200">
                         <div className="flex items-center gap-8 text-left">
                             <div className="p-6 bg-indigo-600 rounded-[2rem] shadow-2xl shadow-indigo-200"><Icon name="shield" size={36} className="text-white"/></div>
                             <div>
                                 <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-2 text-slate-800">HR Strategy Map</h1>
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.4em]">Integrated Architecture Audit</p>
+                                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.4em]">Organization Architecture Re-Audit</p>
                             </div>
                         </div>
                         <div className="flex gap-2 bg-slate-50 p-2.5 rounded-[2rem] border border-slate-200">
@@ -350,10 +400,10 @@
                             <div className="max-w-6xl mx-auto space-y-16 text-center">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                                     {[
-                                        { label: "Audit Progress", val: "100", unit: "%", color: "emerald-600" },
-                                        { label: "Executive Work", val: "9", unit: "tasks", color: "indigo-600" },
-                                        { label: "Total Population", val: stats.totalStaff, unit: "pax", color: "slate-800" },
-                                        { label: "Audited Sum", val: "26", unit: "sum", color: "indigo-600" }
+                                        { label: "Meeting Attendance", val: "12", unit: "hrs", color: "emerald-600" },
+                                        { label: "Audit Review", val: "100", unit: "%", color: "indigo-600" },
+                                        { label: "Global Population", val: stats.totalStaff, unit: "pax", color: "slate-800" },
+                                        { label: "Architecture Sum", val: "26", unit: "tasks", color: "indigo-600" }
                                     ].map((s, i) => (
                                         <div key={i} className="bg-slate-50 p-12 rounded-[3rem] border border-slate-100">
                                             <div className="text-[12px] font-black text-slate-400 mb-6 uppercase tracking-widest leading-none">{s.label}</div>
