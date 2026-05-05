@@ -25,7 +25,7 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(226, 232, 240, 1);
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .active-glow {
@@ -49,6 +49,16 @@
             50% { opacity: 0.8; transform: scale(0.98); }
         }
         .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
+
+        @keyframes signalFlow {
+            from { stroke-dashoffset: 40; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .animate-signal {
+            stroke-dasharray: 4, 12; 
+            animation: signalFlow 1.5s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +180,7 @@
                 pay_audit: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly" }
             });
 
-            // COORDINATE GRID
+            // COORDINATE GRID BASE
             const baseCoords = useMemo(() => ({
                 ent_ceg: { x: 300, y: 200 }, ent_enr: { x: 600, y: 200 }, ent_hsk: { x: 900, y: 200 }, ent_klc: { x: 1200, y: 200 }, ent_tgi: { x: 1500, y: 200 }, ent_vn: { x: 1800, y: 200 }, ent_aus: { x: 2100, y: 200 },
                 manager: { x: 600, y: 550 }, recruiter: { x: 1200, y: 550 }, payroll: { x: 1800, y: 550 },
@@ -190,7 +200,40 @@
                 pay_tax_yearly: { x: 1950, y: 1100 }, pay_benefits: { x: 1950, y: 1180 }, pay_audit: { x: 1950, y: 1260 }
             }), []);
 
-            // --- STRATEGIC ANALYTICS CALCULATOR ---
+            // DYNAMIC LAYOUT ENGINE (Fixes stacking)
+            const dynamicCoords = useMemo(() => {
+                const newCoords = { ...baseCoords };
+                if (!activeNodeId) return newCoords;
+                
+                const active = data[activeNodeId];
+                let focusRoleId = null;
+
+                if (active.type === 'role') focusRoleId = activeNodeId;
+                else if (active.type === 'category') focusRoleId = active.belongsTo;
+                else if (active.type === 'task') focusRoleId = data[active.belongsToCat]?.belongsTo;
+
+                if (focusRoleId) {
+                    const centerRoleX = baseCoords[focusRoleId].x;
+                    const relatedCats = Object.entries(data).filter(([id, v]) => v.type === 'category' && v.belongsTo === focusRoleId).map(([id]) => id);
+                    
+                    const catSpacing = 240;
+                    const catStartX = centerRoleX - ((relatedCats.length - 1) * catSpacing) / 2;
+
+                    relatedCats.forEach((catId, catIdx) => {
+                        const targetCatX = catStartX + (catIdx * catSpacing);
+                        newCoords[catId] = { x: targetCatX, y: 820 };
+
+                        const relatedTasks = Object.entries(data).filter(([id, v]) => v.type === 'task' && v.belongsToCat === catId).map(([id]) => id);
+                        relatedTasks.forEach((taskId, taskIdx) => {
+                            newCoords[taskId] = { x: targetCatX, y: 1050 + (taskIdx * 80) };
+                        });
+                    });
+                }
+                
+                return newCoords;
+            }, [activeNodeId, data, baseCoords]);
+
+            // STRATEGIC ANALYTICS CALCULATOR
             const stats = useMemo(() => {
                 const roles = Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k,v]) => k);
                 const roleStats = roles.map(r => ({
@@ -249,8 +292,10 @@
                 const activeData = activeNodeId ? data[activeNodeId] : null;
                 const isFocused = activeNodeId === nodeKey;
                 const isTask = nodeData.type === 'task';
+                
                 let isVisible = viewMode === 'admin' || !isTask || (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
-                const { x, y } = baseCoords[nodeKey] || { x: 1200, y: 500 };
+                const { x, y } = dynamicCoords[nodeKey] || { x: 1200, y: 500 };
+                
                 let isRelated = false;
                 if (activeNodeId) {
                     if (nodeKey === activeNodeId) isRelated = true;
@@ -282,6 +327,15 @@
                                         <Icon name="users" size={16}/><span className="text-xl font-black">{nodeData.employeeCount}</span>
                                     </div>
                                 </div>
+                                {nodeData.breakdown && (isFocused || isRelated) && (
+                                    <div className="mt-6 pt-5 border-t border-slate-100 flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-tighter animate-popup">
+                                        <div className="flex flex-col items-center"><span>FT</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.ft}</span></div>
+                                        <div className="w-[1px] h-4 bg-slate-100" />
+                                        <div className="flex flex-col items-center"><span>PT</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.pt}</span></div>
+                                        <div className="w-[1px] h-4 bg-slate-100" />
+                                        <div className="flex flex-col items-center"><span>FL</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.fl}</span></div>
+                                    </div>
+                                )}
                             </div>
                         ) : nodeData.type === 'role' ? (
                             <div className="flex flex-col text-left">
@@ -418,16 +472,17 @@
                                         {[200, 550, 850].map(y => <div key={y} className="absolute left-0 right-0 h-px bg-slate-900" style={{ top: `${y}px` }}/>)}
                                     </div>
                                     
+                                    {/* CONNECTIONS */}
                                     {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => (
                                         v.reportsTo?.map(ent => (
-                                            <Connection key={`${k}-${ent}`} start={baseCoords[ent]} end={baseCoords[k]} color="#cbd5e1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} />
+                                            <Connection key={`${k}-${ent}`} start={dynamicCoords[ent]} end={dynamicCoords[k]} color="#cbd5e1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} />
                                         ))
                                     ))}
                                     {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
-                                        <Connection key={`${k}-cat`} start={baseCoords[v.belongsTo]} end={baseCoords[k]} color="#6366f1" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} />
+                                        <Connection key={`${k}-cat`} start={dynamicCoords[v.belongsTo]} end={dynamicCoords[k]} color="#6366f1" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} />
                                     ))}
                                     {Object.entries(data).filter(([k,v]) => v.type === 'task').map(([k, v]) => (
-                                        <Connection key={`${k}-task`} start={baseCoords[v.belongsToCat]} end={baseCoords[k]} color="#818cf8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} />
+                                        <Connection key={`${k}-task`} start={dynamicCoords[v.belongsToCat]} end={dynamicCoords[k]} color="#818cf8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} />
                                     ))}
 
                                     {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
