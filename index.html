@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic HR Architecture Map - Executive Analytics</title>
+    <title>Strategic HR Synergy Map</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -12,19 +12,19 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f1f5f9; 
+            background-color: #f8fafc; 
             color: #0f172a; 
-            overflow: hidden;
+            overflow: hidden; 
             background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
         }
         
         .node-card {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(226, 232, 240, 1);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -39,16 +39,10 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
-
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(0.98); }
-        }
-        .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
 
         @keyframes signalFlow {
             from { stroke-dashoffset: 40; }
@@ -62,24 +56,31 @@
 
         .admin-input {
             background: transparent;
-            border: 1px dashed #cbd5e1;
+            border: 1px dashed transparent;
             padding: 2px 4px;
             border-radius: 4px;
             width: 100%;
+            transition: all 0.2s;
+        }
+        .admin-input:hover {
+            border-color: #cbd5e1;
+            background: rgba(0,0,0,0.02);
         }
         .admin-input:focus {
             outline: none;
             border-color: #6366f1;
+            border-style: solid;
             background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .animate-popup {
-            animation: popup 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes popup {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .pro-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02), 0 4px 6px -2px rgba(0, 0, 0, 0.01);
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -96,13 +97,12 @@
                 clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
                 refresh: <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>,
                 chevron: <polyline points="9 18 15 12 9 6" />,
-                calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
                 trash: <><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>,
                 plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
                 activity: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-                trending: <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />,
                 alert: <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
-                briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
+                target: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
+                layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>
             };
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -115,7 +115,7 @@
             if (!start || !end) return null;
             const midY = (start.y + end.y) / 2;
             const path = `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`;
-            const opacity = active ? 'opacity-100' : (isFaint ? 'opacity-[0.08]' : (isReporting ? 'opacity-10' : 'opacity-20'));
+            const opacity = active ? 'opacity-100' : (isFaint ? 'opacity-[0.03]' : (isReporting ? 'opacity-10' : 'opacity-20'));
             
             return (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 2400 3000" preserveAspectRatio="none">
@@ -134,7 +134,7 @@
 
         function App() {
             const [viewMode, setViewMode] = useState('presentation');
-            const [zoomLevel, setZoomLevel] = useState(0.7);
+            const [zoomLevel, setZoomLevel] = useState(0.4); // Updated to 40%
             const [offset, setOffset] = useState({ x: 150, y: 50 });
             const [hoveredNode, setHoveredNode] = useState(null);
             const [selectedNode, setSelectedNode] = useState(null);
@@ -143,36 +143,39 @@
             const containerRef = useRef(null);
 
             const activeNodeId = selectedNode || hoveredNode;
+            const isIssues = viewMode === 'current_situation'; 
             const isAdmin = viewMode === 'admin';
 
             // --- DATASET ---
             const [data, setData] = useState({
                 ent_ceg: { type: 'entity', title: "CEG CORP", employeeCount: 30, region: 'Singapore' },
-                ent_enr: { type: 'entity', title: "Enrichment", employeeCount: 125, region: 'Singapore', breakdown: { ft: 30, pt: 60, fl: 35 } },
+                ent_enr: { type: 'entity', title: "Enrichment", employeeCount: 125, region: 'Singapore' },
                 ent_hsk: { type: 'entity', title: "HSK", employeeCount: 10, region: 'Singapore' },
                 ent_klc: { type: 'entity', title: "KLC", employeeCount: 100, region: 'Singapore' },
                 ent_tgi: { type: 'entity', title: "TGI", employeeCount: 15, region: 'Singapore' },
                 ent_vn: { type: 'entity', title: "Vietnam", employeeCount: 100, region: 'Overseas' },
                 ent_aus: { type: 'entity', title: "Australia", employeeCount: 0, region: 'Overseas' },
                 
-                manager: { type: 'role', title: "HR Manager", subtitle: "Strategic Lead", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_vn', 'ent_aus'] },
-                recruiter: { type: 'role', title: "HR Executive", subtitle: "Execution Lead", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk'] },
-                payroll: { type: 'role', title: "Payroll Specialist", subtitle: "Support Specialist", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_klc', 'ent_tgi'] },
+                manager: { type: 'role', title: "HR Manager", subtitle: "Lead Strategy", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_vn', 'ent_aus'] },
+                recruiter: { type: 'role', title: "HR Executive", subtitle: "Lead Execution", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk'] },
+                payroll: { type: 'role', title: "Payroll Specialist", subtitle: "Lead Support", reportsTo: ['ent_ceg', 'ent_enr', 'ent_hsk', 'ent_klc', 'ent_tgi'] },
                 
-                cat_m_strat: { type: 'category', title: "Strategic Planning", belongsTo: 'manager' },
-                cat_m_policy: { type: 'category', title: "Policy & Compliance", belongsTo: 'manager' },
-                cat_m_payroll_oversight: { type: 'category', title: "Payroll Oversight", belongsTo: 'manager' },
-                cat_m_meetings: { type: 'category', title: "Meeting Attendance", belongsTo: 'manager' },
-                cat_m_projects: { type: 'category', title: "HR Projects", belongsTo: 'manager' },
+                cat_m_strat: { type: 'category', title: "Strategic Planning", belongsTo: 'manager', group: 'strategic' },
+                cat_m_policy: { type: 'category', title: "Policy & Compliance", belongsTo: 'manager', group: 'strategic' },
+                cat_m_payroll_oversight: { type: 'category', title: "Payroll Oversight", belongsTo: 'manager', group: 'strategic' },
+                cat_m_meetings: { type: 'category', title: "Meeting Attendance", belongsTo: 'manager', group: 'operational' },
+                cat_m_projects: { type: 'category', title: "HR Projects", belongsTo: 'manager', group: 'strategic' },
                 
-                cat_lifecycle: { type: 'category', title: "Employee Lifecycle", belongsTo: 'recruiter' },
-                cat_recruitment: { type: 'category', title: "Recruitment", belongsTo: 'recruiter' },
-                cat_ops: { type: 'category', title: "Operations", belongsTo: 'recruiter' },
-                cat_engagement: { type: 'category', title: "Staff Engagement", belongsTo: 'recruiter' },
-                cat_hr_payroll_admin: { type: 'category', title: "Monthly Payroll Admin", belongsTo: 'recruiter' }, 
+                cat_lifecycle: { type: 'category', title: "Employee Lifecycle", belongsTo: 'recruiter', group: 'operational' },
+                cat_recruitment: { type: 'category', title: "Recruitment", belongsTo: 'recruiter', group: 'operational' },
+                cat_ops: { type: 'category', title: "Operations", belongsTo: 'recruiter', group: 'operational' },
+                cat_engagement: { type: 'category', title: "Staff Engagement", belongsTo: 'recruiter', group: 'operational' },
+                cat_hr_payroll_admin: { type: 'category', title: "Monthly Payroll Admin", belongsTo: 'recruiter', group: 'operational' }, 
                 
-                cat_pay_monthly: { type: 'category', title: "Monthly Payroll", belongsTo: 'payroll' },
-                cat_pay_yearly: { type: 'category', title: "Yearly Compliance", belongsTo: 'payroll' },
+                cat_pay_monthly: { type: 'category', title: "Monthly Payroll", belongsTo: 'payroll', group: 'operational' },
+                cat_pay_stat: { type: 'category', title: "Statutory Reporting", belongsTo: 'payroll', group: 'operational' },
+                cat_pay_benefits: { type: 'category', title: "Benefits & Welfare", belongsTo: 'payroll', group: 'operational' },
+                cat_pay_yearly: { type: 'category', title: "Yearly Compliance", belongsTo: 'payroll', group: 'operational' },
 
                 m_strat_leadership: { type: 'task', title: "Strategic Leadership", hours: 15, belongsToCat: "cat_m_strat" },
                 m_workforce: { type: 'task', title: "Workforce Planning", hours: 5, belongsToCat: "cat_m_strat" },
@@ -194,24 +197,28 @@
                 hr_training: { type: 'task', title: "Training Admin", hours: 5, belongsToCat: "cat_ops" },
                 hr_events: { type: 'task', title: "Engagement Events", hours: 8, belongsToCat: "cat_engagement" },
                 hr_welfare: { type: 'task', title: "Staff Welfare", hours: 4, belongsToCat: "cat_engagement" },
-                hr_claims_verification: { type: 'task', title: "Claims Verification", hours: 12, belongsToCat: "cat_hr_payroll_admin" }, 
+                hr_claims_verification: { type: 'task', title: "Claims Verification", hours: 12, belongsToCat: "cat_hr_payroll_admin" },
+                hr_payroll_entry: { type: 'task', title: "Payroll Data Entry", hours: 8, belongsToCat: "cat_hr_payroll_admin" },
 
                 pay_salary: { type: 'task', title: "Salary Processing", hours: 25, belongsToCat: "cat_pay_monthly" },
                 pay_claims: { type: 'task', title: "Claims Processing", hours: 10, belongsToCat: "cat_pay_monthly" },
                 pay_bank: { type: 'task', title: "Bank Coordination", hours: 5, belongsToCat: "cat_pay_monthly" },
                 pay_reporting: { type: 'task', title: "Payroll Reporting", hours: 8, belongsToCat: "cat_pay_monthly" },
-                pay_tax_yearly: { type: 'task', title: "Tax Processing", hours: 40, belongsToCat: "cat_pay_yearly" },
-                pay_benefits: { type: 'task', title: "Benefits & Insurance", hours: 15, belongsToCat: "cat_pay_yearly" },
+                pay_iras: { type: 'task', title: "IRAS Tax Filings", hours: 10, belongsToCat: "cat_pay_stat" },
+                pay_cpf: { type: 'task', title: "CPF Contribution Mgmt", hours: 6, belongsToCat: "cat_pay_stat" },
+                pay_fin_report: { type: 'task', title: "Finance Payroll Report", hours: 6, belongsToCat: "cat_pay_stat" },
+                pay_ghs: { type: 'task', title: "GHS Enrollments", hours: 8, belongsToCat: "cat_pay_benefits" },
+                pay_tax_yearly: { type: 'task', title: "Yearly Tax Proc", hours: 40, belongsToCat: "cat_pay_yearly" },
                 pay_audit: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly" }
             });
 
-            // COORDINATE GRID BASE
+            // COORDINATE GRID
             const baseCoords = useMemo(() => ({
                 ent_ceg: { x: 300, y: 200 }, ent_enr: { x: 600, y: 200 }, ent_hsk: { x: 900, y: 200 }, ent_klc: { x: 1200, y: 200 }, ent_tgi: { x: 1500, y: 200 }, ent_vn: { x: 1800, y: 200 }, ent_aus: { x: 2100, y: 200 },
                 manager: { x: 600, y: 550 }, recruiter: { x: 1200, y: 550 }, payroll: { x: 1800, y: 550 },
                 cat_m_strat: { x: 400, y: 850 }, cat_m_policy: { x: 500, y: 850 }, cat_m_payroll_oversight: { x: 600, y: 850 }, cat_m_meetings: { x: 700, y: 850 }, cat_m_projects: { x: 800, y: 850 },
                 cat_lifecycle: { x: 1050, y: 850 }, cat_recruitment: { x: 1150, y: 850 }, cat_ops: { x: 1250, y: 850 }, cat_engagement: { x: 1350, y: 850 }, cat_hr_payroll_admin: { x: 1450, y: 850 },
-                cat_pay_monthly: { x: 1650, y: 850 }, cat_pay_yearly: { x: 1950, y: 850 },
+                cat_pay_monthly: { x: 1650, y: 850 }, cat_pay_stat: { x: 1750, y: 850 }, cat_pay_benefits: { x: 1850, y: 850 }, cat_pay_yearly: { x: 1950, y: 850 },
                 m_strat_leadership: { x: 400, y: 1100 }, m_workforce: { x: 400, y: 1180 }, 
                 m_handbook: { x: 500, y: 1100 }, m_legal: { x: 500, y: 1180 },
                 m_payroll_audit: { x: 600, y: 1100 }, m_vendor_mgmt: { x: 600, y: 1180 }, m_compliance_review: { x: 600, y: 1260 },
@@ -221,99 +228,116 @@
                 hr_recruitment: { x: 1150, y: 1100 }, hr_screening: { x: 1150, y: 1180 },
                 hr_workpass: { x: 1250, y: 1100 }, hr_records: { x: 1250, y: 1180 }, hr_training: { x: 1250, y: 1260 },
                 hr_events: { x: 1350, y: 1100 }, hr_welfare: { x: 1350, y: 1180 },
-                hr_claims_verification: { x: 1450, y: 1100 },
+                hr_claims_verification: { x: 1450, y: 1100 }, hr_payroll_entry: { x: 1450, y: 1180 },
                 pay_salary: { x: 1650, y: 1100 }, pay_claims: { x: 1650, y: 1180 }, pay_bank: { x: 1650, y: 1260 }, pay_reporting: { x: 1650, y: 1340 },
-                pay_tax_yearly: { x: 1950, y: 1100 }, pay_benefits: { x: 1950, y: 1180 }, pay_audit: { x: 1950, y: 1260 }
+                pay_iras: { x: 1750, y: 1100 }, pay_cpf: { x: 1750, y: 1180 }, pay_fin_report: { x: 1750, y: 1260 },
+                pay_ghs: { x: 1850, y: 1100 },
+                pay_tax_yearly: { x: 1950, y: 1100 }, pay_audit: { x: 1950, y: 1180 }
             }), []);
 
-            // --- ADMIN FUNCTIONS ---
+            // Coverage Map
+            const coverageMap = useMemo(() => ({
+                manager: ['cat_lifecycle', 'cat_recruitment', 'cat_ops', 'cat_engagement', 'cat_hr_payroll_admin'],
+                payroll: ['cat_lifecycle', 'cat_recruitment', 'cat_ops']
+            }), []);
+
+            // Admin Actions
             const updateNodeData = (key, field, value) => {
                 setData(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
             };
 
             const addNode = (type, parentId = null) => {
                 const id = `${type}_${Date.now()}`;
-                const baseNode = { type, title: `New ${type.toUpperCase()}` };
+                const baseNode = { type, title: `NEW ${type.toUpperCase()}` };
                 if (type === 'entity') { baseNode.employeeCount = 10; baseNode.region = 'Singapore'; }
-                else if (type === 'role') { baseNode.subtitle = 'Role'; baseNode.reportsTo = []; }
-                else if (type === 'category') { baseNode.belongsTo = parentId; }
-                else if (type === 'task') { baseNode.belongsToCat = parentId; baseNode.hours = 10; }
+                else if (type === 'role') { baseNode.subtitle = 'NEW ROLE'; baseNode.reportsTo = []; }
+                else if (type === 'category') { baseNode.belongsTo = parentId || 'manager'; }
+                else if (type === 'task') { baseNode.belongsToCat = parentId || 'cat_m_strat'; baseNode.hours = 5; }
                 setData(prev => ({ ...prev, [id]: baseNode }));
             };
 
             const deleteNode = (key) => {
-                setData(prev => { const next = { ...prev }; delete next[key]; return next; });
+                setData(prev => { const n = { ...prev }; delete n[key]; return n; });
             };
 
-            // DYNAMIC LAYOUT ENGINE (Fixes stacking)
+            // Reset Center Box - Default to 40%
+            const resetView = useCallback(() => {
+                if (containerRef.current) {
+                    const { offsetWidth, offsetHeight } = containerRef.current;
+                    const newZoom = 0.4; // Updated to 40% as requested
+                    setZoomLevel(newZoom);
+                    // Center content (approx 1200x650)
+                    setOffset({
+                        x: (offsetWidth / 2) - (1200 * newZoom),
+                        y: (offsetHeight / 2) - (650 * newZoom)
+                    });
+                    setSelectedNode(null);
+                }
+            }, []);
+
             const dynamicCoords = useMemo(() => {
                 const newCoords = { ...baseCoords };
-                if (!activeNodeId) return newCoords;
+                let targetId = activeNodeId;
+                if (isIssues && !targetId) targetId = 'recruiter';
+                if (!targetId) return newCoords;
                 
-                const active = data[activeNodeId];
-                let focusRoleId = null;
+                const activeNode = data[targetId];
+                if (!activeNode) return newCoords;
 
-                if (active.type === 'role') focusRoleId = activeNodeId;
-                else if (active.type === 'category') focusRoleId = active.belongsTo;
-                else if (active.type === 'task') focusRoleId = data[active.belongsToCat]?.belongsTo;
+                let focusRoleId = null;
+                if (activeNode.type === 'role') focusRoleId = targetId;
+                else if (activeNode.type === 'category') focusRoleId = activeNode.belongsTo;
+                else if (activeNode.type === 'task') focusRoleId = data[activeNode.belongsToCat]?.belongsTo;
 
                 if (focusRoleId) {
-                    const centerRoleX = baseCoords[focusRoleId].x;
-                    const relatedCats = Object.entries(data).filter(([id, v]) => v.type === 'category' && v.belongsTo === focusRoleId).map(([id]) => id);
-                    
+                    const centerRoleX = baseCoords[focusRoleId]?.x || 1200;
+                    let relatedCats = Object.entries(data).filter(([id, v]) => v.type === 'category' && v.belongsTo === focusRoleId).map(([id]) => id);
+                    if (isIssues && (focusRoleId === 'manager' || focusRoleId === 'payroll')) {
+                        relatedCats = [...new Set([...relatedCats, ...(coverageMap[focusRoleId] || [])])];
+                    }
                     const catSpacing = 220;
                     const catStartX = centerRoleX - ((relatedCats.length - 1) * catSpacing) / 2;
 
                     relatedCats.forEach((catId, catIdx) => {
                         const targetCatX = catStartX + (catIdx * catSpacing);
                         newCoords[catId] = { x: targetCatX, y: 820 };
-
                         const relatedTasks = Object.entries(data).filter(([id, v]) => v.type === 'task' && v.belongsToCat === catId).map(([id]) => id);
                         relatedTasks.forEach((taskId, taskIdx) => {
                             newCoords[taskId] = { x: targetCatX, y: 1020 + (taskIdx * 80) };
                         });
                     });
                 }
-                
                 return newCoords;
-            }, [activeNodeId, data, baseCoords]);
+            }, [activeNodeId, data, baseCoords, isIssues, coverageMap]);
 
-            // STRATEGIC ANALYTICS CALCULATOR
             const stats = useMemo(() => {
                 const roles = Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k,v]) => k);
-                const roleStats = roles.map(r => ({
+                const roleBreakdown = roles.map(r => ({
                     id: r,
-                    title: data[r]?.title || r,
+                    title: data[r].title,
                     hours: Object.entries(data).filter(([k,v]) => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).reduce((s, [k,v]) => s + (Number(v.hours) || 0), 0),
                     population: (data[r]?.reportsTo || []).reduce((s, id) => s + (Number(data[id]?.employeeCount) || 0), 0),
-                    tasks: Object.values(data).filter(v => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).length
+                    tasks: Object.values(data).filter(v => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).length,
+                    risk: getRoleHours(r) > 40 ? 'High' : (getRoleHours(r) > 35 ? 'Moderate' : 'Stable')
                 }));
 
-                const moduleLoad = Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k,v]) => ({
+                function getRoleHours(r) {
+                    return Object.entries(data).filter(([k,v]) => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).reduce((s, [k,v]) => s + (Number(v.hours) || 0), 0);
+                }
+
+                const catBreakdown = Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k,v]) => ({
                     id: k,
                     title: v.title,
-                    belongsTo: v.belongsTo,
-                    hours: Object.values(data).filter(t => t.belongsToCat === k).reduce((s,t) => s + (Number(t.hours) || 0), 0)
+                    group: v.group || 'operational',
+                    hours: Object.values(data).filter(t => t.belongsToCat === k).reduce((s, t) => s + (Number(t.hours) || 0), 0)
                 })).sort((a,b) => b.hours - a.hours);
 
-                const totalHours = roleStats.reduce((s, r) => s + r.hours, 0);
-                const totalStaff = Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + (Number(v.employeeCount) || 0), 0);
-                
-                const strategicCatIds = ['cat_m_strat', 'cat_m_policy', 'cat_m_payroll_oversight', 'cat_m_meetings', 'cat_m_projects'];
-                const stratHours = moduleLoad.filter(m => strategicCatIds.includes(m.id)).reduce((s,m) => s + m.hours, 0);
+                const totalHours = roleBreakdown.reduce((s, r) => s + r.hours, 0);
+                const staffCount = Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + (v.employeeCount || 0), 0);
+                const stratHours = catBreakdown.filter(c => c.group === 'strategic').reduce((s, c) => s + c.hours, 0);
                 const opsHours = totalHours - stratHours;
 
-                return { 
-                    roleStats, 
-                    moduleLoad,
-                    totalHours,
-                    totalStaff,
-                    hrRatio: (totalStaff / roles.length).toFixed(1),
-                    stratSplit: totalHours > 0 ? {
-                        strat: Math.round((stratHours / totalHours) * 100),
-                        ops: Math.round((opsHours / totalHours) * 100)
-                    } : { strat: 0, ops: 0 }
-                };
+                return { roleBreakdown, catBreakdown, totalHours, staffCount, hrRatio: Math.round(staffCount / roles.length), stratSplit: { strat: Math.round((stratHours/totalHours)*100), ops: Math.round((opsHours/totalHours)*100) } };
             }, [data]);
 
             const handleWheel = useCallback((e) => { e.preventDefault(); setZoomLevel(prev => Math.min(Math.max(0.1, prev - e.deltaY * 0.001), 1.5)); }, []);
@@ -334,116 +358,85 @@
 
             const renderNode = (nodeKey) => {
                 const nodeData = data[nodeKey];
-                const activeData = activeNodeId ? data[activeNodeId] : null;
                 const isFocused = activeNodeId === nodeKey;
-                const isTask = nodeData.type === 'task';
                 
-                let isVisible = viewMode === 'admin' || !isTask || (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
+                let isVisible = isAdmin || nodeData.type !== 'task' || (isFocused || nodeData.belongsToCat === activeNodeId || (data[activeNodeId]?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
+                if (isIssues && nodeData.type === 'category' && nodeData.belongsTo === 'recruiter') isVisible = true;
+                if (isIssues && nodeData.type === 'task' && (coverageMap[activeNodeId] || []).includes(nodeData.belongsToCat)) isVisible = true;
+
                 const { x, y } = dynamicCoords[nodeKey] || { x: 1200, y: 500 };
                 
                 let isRelated = false;
                 if (activeNodeId) {
                     if (nodeKey === activeNodeId) isRelated = true;
-                    else if (nodeData.type === 'entity' && activeData?.reportsTo?.includes(nodeKey)) isRelated = true;
-                    else if (nodeData.type === 'category' && (nodeData.belongsTo === activeNodeId || activeData?.belongsToCat === nodeKey)) isRelated = true;
-                    else if (nodeData.type === 'role' && (activeData?.reportsTo?.includes(nodeKey) || activeData?.belongsTo === nodeKey || (isTask && data[nodeData.belongsToCat]?.belongsTo === nodeKey))) isRelated = true;
-                    else if (isTask && (nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) isRelated = true;
+                    else if (nodeData.type === 'category' && (nodeData.belongsTo === activeNodeId || data[activeNodeId]?.belongsToCat === nodeKey)) isRelated = true;
+                    else if (nodeData.type === 'role' && (data[activeNodeId]?.belongsTo === nodeKey)) isRelated = true;
+                    else if (nodeData.type === 'task' && (nodeData.belongsToCat === activeNodeId || (data[activeNodeId]?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) isRelated = true;
+                    
+                    if (isIssues && (activeNodeId === 'manager' || activeNodeId === 'payroll')) {
+                        if ((coverageMap[activeNodeId] || []).includes(nodeKey)) isRelated = true;
+                        if (nodeData.type === 'task' && (coverageMap[activeNodeId] || []).includes(nodeData.belongsToCat)) isRelated = true;
+                    }
                 }
 
                 return (
                     <div key={nodeKey} 
-                        onClick={(e) => { e.stopPropagation(); if (!isAdmin) setSelectedNode(prev => prev === nodeKey ? null : nodeKey); }}
-                        onMouseEnter={() => !isAdmin && setHoveredNode(nodeKey)} 
-                        onMouseLeave={() => !isAdmin && setHoveredNode(null)} 
+                        onClick={(e) => { e.stopPropagation(); setSelectedNode(prev => prev === nodeKey ? null : nodeKey); }}
+                        onMouseEnter={() => setHoveredNode(nodeKey)} 
+                        onMouseLeave={() => setHoveredNode(null)} 
                         className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-card
                             ${nodeData.type === 'entity' ? 'w-64 p-8 rounded-2xl' : (nodeData.type === 'role' ? 'w-80 p-8 rounded-[2rem]' : (nodeData.type === 'category' ? 'w-56 p-5 rounded-xl' : 'w-52 p-4 rounded-full'))} 
                             ${isFocused ? 'active-glow scale-[1.08] z-[300]' : 'z-10'} 
+                            ${nodeKey === 'recruiter' && isIssues ? 'border-red-500 bg-red-50 grayscale-[0.5]' : ''}
                             ${isRelated && !isFocused ? 'border-indigo-500 z-[200] scale-[1.04]' : ''} 
                             ${isVisible ? 'opacity-100' : 'opacity-0 scale-90 pointer-events-none'}
                             ${activeNodeId && !isRelated && isVisible ? 'opacity-[0.15] grayscale-[0.6] blur-[2px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}px`, top: `${y}px` }}
                     >
                         {isAdmin && (
-                            <div className="absolute -top-3 -right-3 flex gap-2">
-                                <button onClick={(e) => { e.stopPropagation(); deleteNode(nodeKey); }} className="p-2 bg-red-500 text-white rounded-full shadow-lg hover:scale-110 transition-transform"><Icon name="trash" size={14}/></button>
-                            </div>
+                            <button onClick={(e) => { e.stopPropagation(); deleteNode(nodeKey); }} className="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform z-[400]"><Icon name="trash" size={14}/></button>
                         )}
-                        
+
                         {nodeData.type === 'entity' ? (
                             <div className="text-left">
-                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest leading-none">
-                                    {isAdmin ? <input className="admin-input" value={nodeData.region} onChange={e => updateNodeData(nodeKey, 'region', e.target.value)} /> : nodeData.region}
+                                <input className="admin-input text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest" value={nodeData.region} onChange={e => updateNodeData(nodeKey, 'region', e.target.value)} disabled={!isAdmin} />
+                                <input className="admin-input font-black text-[24px] uppercase tracking-tighter mb-4 text-slate-900" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} disabled={!isAdmin} />
+                                <div className={`w-full py-3 rounded-xl flex flex-col items-center justify-center gap-1 ${isRelated ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                                    <div className="flex items-center gap-2"><Icon name="users" size={16}/><input type="number" className="bg-transparent w-12 text-center font-black text-xl outline-none" value={nodeData.employeeCount} onChange={e => updateNodeData(nodeKey, 'employeeCount', e.target.value)} disabled={!isAdmin} /></div>
                                 </div>
-                                <div className="font-black text-[24px] uppercase tracking-tighter mb-4 text-slate-900 leading-none">
-                                    {isAdmin ? <input className="admin-input font-black text-xl uppercase" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} /> : nodeData.title}
-                                </div>
-                                <div className={`w-full py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${isRelated ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                                    <div className="flex items-center gap-2">
-                                        <Icon name="users" size={16}/><span className="text-xl font-black">
-                                            {isAdmin ? <input type="number" className="w-16 bg-transparent border-b border-indigo-400 font-black text-center" value={nodeData.employeeCount} onChange={e => updateNodeData(nodeKey, 'employeeCount', e.target.value)} /> : nodeData.employeeCount}
-                                        </span>
-                                    </div>
-                                </div>
-                                {nodeData.breakdown && (isFocused || isRelated) && (
-                                    <div className="mt-6 pt-5 border-t border-slate-100 flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-tighter animate-popup">
-                                        <div className="flex flex-col items-center"><span>FT</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.ft}</span></div>
-                                        <div className="w-[1px] h-4 bg-slate-100" />
-                                        <div className="flex flex-col items-center"><span>PT</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.pt}</span></div>
-                                        <div className="w-[1px] h-4 bg-slate-100" />
-                                        <div className="flex flex-col items-center"><span>FL</span><span className="text-slate-800 font-black mt-1 text-xs">{nodeData.breakdown.fl}</span></div>
-                                    </div>
-                                )}
                             </div>
                         ) : nodeData.type === 'role' ? (
                             <div className="flex flex-col text-left">
                                 <div className="flex justify-between items-center mb-6">
-                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none">
-                                        {isAdmin ? <input className="admin-input" value={nodeData.subtitle} onChange={e => updateNodeData(nodeKey, 'subtitle', e.target.value)} /> : nodeData.subtitle}
-                                    </div>
-                                    <div className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-bold">P: {stats.roleStats.find(r => r.id === nodeKey)?.population}</div>
+                                    <input className="admin-input text-[10px] font-black uppercase text-slate-400 tracking-widest" value={nodeData.subtitle} onChange={e => updateNodeData(nodeKey, 'subtitle', e.target.value)} disabled={!isAdmin} />
+                                    <div className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-bold whitespace-nowrap">P: {stats.roleBreakdown.find(r => r.id === nodeKey)?.population}</div>
                                 </div>
-                                <div className="font-black text-[30px] leading-none mb-6 uppercase tracking-tighter text-slate-900">
-                                    {isAdmin ? <input className="admin-input font-black text-2xl uppercase" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} /> : nodeData.title}
-                                </div>
-                                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                                    <div className="flex justify-between items-center mb-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                                        <span>Util Rate</span>
-                                        <span className="text-lg text-indigo-600">{stats.roleStats.find(r => r.id === nodeKey)?.hours}h</span>
+                                <input className="admin-input font-black text-[30px] leading-none mb-6 uppercase tracking-tighter text-slate-900" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} disabled={!isAdmin} />
+                                {nodeKey === 'recruiter' && isIssues ? (
+                                    <div className="w-full py-2 bg-red-600 text-white rounded-xl text-center font-black text-xs tracking-widest animate-pulse">POSITION VACANT</div>
+                                ) : (
+                                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                                        <div className="flex justify-between items-center mb-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                                            <span>Util Rate</span>
+                                            <span className={`text-lg font-black ${stats.roleBreakdown.find(r => r.id === nodeKey)?.hours > 40 ? 'text-red-500' : 'text-indigo-600'}`}>{stats.roleBreakdown.find(r => r.id === nodeKey)?.hours}h</span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden"><div className={`h-full transition-all duration-1000 ${stats.roleBreakdown.find(r => r.id === nodeKey)?.hours > 40 ? 'bg-red-500' : 'bg-indigo-600'}`} style={{ width: `${Math.min((stats.roleBreakdown.find(r => r.id === nodeKey)?.hours / 40) * 100, 100)}%` }}/></div>
                                     </div>
-                                    <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                                        <div className={`h-full transition-all duration-1000 ${stats.roleStats.find(r => r.id === nodeKey)?.hours > 40 ? 'bg-red-500' : 'bg-indigo-600'}`} style={{ width: `${Math.min((stats.roleStats.find(r => r.id === nodeKey)?.hours / 40) * 100, 100)}%` }}/>
-                                    </div>
-                                </div>
-                                {isAdmin && (
-                                    <button onClick={() => addNode('category', nodeKey)} className="mt-4 py-2 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-400 text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors">
-                                        <Icon name="plus" size={12}/> Add Module
-                                    </button>
                                 )}
                             </div>
                         ) : nodeData.type === 'category' ? (
                             <div className="flex flex-col text-left">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="text-[13px] font-black uppercase text-slate-800 truncate leading-none">
-                                        {isAdmin ? <input className="admin-input text-xs uppercase" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} /> : nodeData.title}
-                                    </div>
-                                    <Icon name="chevron" size={16} className={`text-slate-400 ${isFocused ? 'rotate-90' : ''}`}/>
+                                <div className="flex justify-between items-center mb-2 gap-2">
+                                    <input className={`admin-input text-[13px] font-black uppercase truncate leading-none ${isIssues && nodeData.belongsTo === 'recruiter' ? 'text-red-600' : 'text-slate-800'}`} value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} disabled={!isAdmin} />
+                                    <Icon name="chevron" size={16} className={`text-slate-400 flex-shrink-0 ${isFocused ? 'rotate-90' : ''}`}/>
                                 </div>
-                                {isAdmin && (
-                                    <button onClick={() => addNode('task', nodeKey)} className="mt-2 py-1 border border-dashed border-indigo-200 rounded-lg text-indigo-400 text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-indigo-50">
-                                        <Icon name="plus" size={10}/> Add Task
-                                    </button>
-                                )}
                             </div>
                         ) : (
                             <div className="flex items-center gap-3 px-2 text-left">
-                                <div className={`p-2.5 rounded-full ${isRelated ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 text-indigo-400'}`}><Icon name="clock" size={14}/></div>
+                                <div className="p-2.5 bg-indigo-50 rounded-full flex-shrink-0"><Icon name="clock" size={14} className="text-indigo-500" /></div>
                                 <div className="truncate flex-1">
-                                    <div className="text-[12px] font-bold truncate uppercase text-slate-700 leading-none mb-1 text-left">
-                                        {isAdmin ? <input className="admin-input text-[10px] uppercase" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} /> : nodeData.title}
-                                    </div>
-                                    <div className="text-[10px] font-black text-indigo-500">
-                                        {isAdmin ? <input type="number" className="w-10 bg-transparent border-b border-indigo-200 font-black text-center" value={nodeData.hours} onChange={e => updateNodeData(nodeKey, 'hours', e.target.value)} /> : nodeData.hours} HRS
-                                    </div>
+                                    <input className="admin-input text-[12px] font-bold truncate uppercase text-slate-700 mb-1" value={nodeData.title} onChange={e => updateNodeData(nodeKey, 'title', e.target.value)} disabled={!isAdmin} />
+                                    <div className="flex items-center gap-1"><input type="number" className="bg-transparent w-8 font-black text-[10px] text-indigo-500 outline-none" value={nodeData.hours} onChange={e => updateNodeData(nodeKey, 'hours', e.target.value)} disabled={!isAdmin} /><span className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">HRS</span></div>
                                 </div>
                             </div>
                         )}
@@ -452,138 +445,238 @@
             };
 
             return (
-                <div className="min-h-screen relative flex flex-col p-8 lg:p-12 selection:bg-indigo-100" onClick={() => setSelectedNode(null)}>
-                    <header className="relative z-[500] flex flex-col lg:flex-row justify-between items-center gap-8 glass-panel p-8 rounded-3xl mb-12 shadow-sm">
-                        <div className="flex items-center gap-8 text-left">
-                            <div className="p-5 bg-slate-900 rounded-2xl shadow-xl"><Icon name="shield" size={32} className="text-white"/></div>
+                <div className="h-screen relative flex flex-col p-8 lg:p-12" onClick={() => setSelectedNode(null)}>
+                    <header className="relative z-[500] flex flex-col lg:flex-row justify-between items-center gap-8 glass-panel p-10 rounded-[3rem] mb-12 shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-10 text-left">
+                            <div className="p-6 bg-slate-900 rounded-[2rem] shadow-2xl"><Icon name="shield" size={36} className="text-white"/></div>
                             <div>
-                                <h1 className="text-3xl font-black tracking-tighter uppercase leading-none mb-1 text-slate-900">Executive HR Command</h1>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Integrated Resource & Capacity Audit</p>
+                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-2 text-slate-900">Strategic HR Synergy Map</h1>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.45em]">Validated Organizational Blueprint</p>
                             </div>
                         </div>
-                        <div className="flex gap-2 bg-slate-200/50 p-1.5 rounded-2xl">
-                            {['presentation', 'analytics', 'admin'].map(m => (
-                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-10 py-3 rounded-xl text-[11px] font-black transition-all tracking-widest uppercase ${viewMode === m ? 'bg-white text-slate-900 shadow-md scale-105' : 'text-slate-500 hover:text-slate-900'}`}>{m}</button>
+                        <div className="flex gap-2 bg-slate-200/40 p-2 rounded-2xl border border-slate-200/50">
+                            {['presentation', 'current_situation', 'analytics', 'admin'].map(m => (
+                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-10 py-4 rounded-xl text-[12px] font-black transition-all tracking-widest uppercase ${viewMode === m ? 'bg-white text-slate-900 shadow-xl scale-105' : 'text-slate-500 hover:text-slate-900'}`}>
+                                    {m.replace('_', ' ')}
+                                </button>
                             ))}
                         </div>
                     </header>
 
                     {viewMode === 'analytics' ? (
-                        <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-4 text-left pb-20">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar pr-6 text-left pb-24 space-y-12 h-0">
+                            {/* KPI SCOREBOARD */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                                <div className="glass-panel p-8 rounded-3xl border-l-4 border-indigo-600">
-                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="activity" size={14}/> Total Org Load</div>
-                                    <div className="text-6xl font-black text-slate-900 tracking-tighter">{stats.totalHours}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Hrs/Wk</span></div>
+                                <div className="pro-card border-b-4 border-slate-900">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Global Capacity</div>
+                                        <div className="p-2 bg-slate-50 rounded-lg text-slate-400"><Icon name="activity" size={16}/></div>
+                                    </div>
+                                    <div className="text-7xl font-black text-slate-900 tracking-tighter mb-2">{stats.totalHours}</div>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Weekly Hours</div>
                                 </div>
-                                <div className="glass-panel p-8 rounded-3xl">
-                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="users" size={14}/> HR Service Ratio</div>
-                                    <div className="text-6xl font-black text-slate-900 tracking-tighter">1:{Math.round(stats.hrRatio)}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Staff</span></div>
+                                <div className="pro-card border-b-4 border-indigo-600">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Service Intensity</div>
+                                        <div className="p-2 bg-indigo-50 rounded-lg text-indigo-400"><Icon name="users" size={16}/></div>
+                                    </div>
+                                    <div className="text-7xl font-black text-indigo-600 tracking-tighter mb-2">1:{stats.hrRatio}</div>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">HR-to-Staff Ratio</div>
                                 </div>
-                                <div className="glass-panel p-8 rounded-3xl">
-                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="trending" size={14}/> Strategic Value</div>
-                                    <div className="text-6xl font-black text-emerald-600 tracking-tighter">{stats.stratSplit.strat}%</div>
+                                <div className="pro-card border-b-4 border-emerald-500">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Strategic Mix</div>
+                                        <div className="p-2 bg-emerald-50 rounded-lg text-emerald-400"><Icon name="target" size={16}/></div>
+                                    </div>
+                                    <div className="text-7xl font-black text-slate-900 tracking-tighter mb-2">{stats.stratSplit.strat}%</div>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">High-Level Focus</div>
                                 </div>
-                                <div className={`glass-panel p-8 rounded-3xl ${stats.roleStats.some(r => r.hours > 40) ? 'bg-red-50/50' : ''}`}>
-                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="alert" size={14}/> Burnout Risk</div>
-                                    <div className={`text-6xl font-black tracking-tighter ${stats.roleStats.some(r => r.hours > 40) ? 'text-red-600' : 'text-slate-900'}`}>{stats.roleStats.filter(r => r.hours > 40).length}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Roles</span></div>
+                                <div className="pro-card border-b-4 border-orange-400">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Audit Score</div>
+                                        <div className="p-2 bg-orange-50 rounded-lg text-orange-400"><Icon name="shield" size={16}/></div>
+                                    </div>
+                                    <div className="text-7xl font-black text-slate-900 tracking-tighter mb-2">94<span className="text-3xl opacity-20">.2</span></div>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compliance Health</div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="glass-panel p-10 rounded-3xl">
-                                    <h2 className="text-lg font-black uppercase tracking-widest text-slate-900 mb-8 border-b border-slate-100 pb-4">Resource Portfolio Matrix</h2>
-                                    <div className="space-y-8">
-                                        <div>
-                                            <div className="flex justify-between items-center text-xs font-black uppercase mb-3">
-                                                <span className="flex items-center gap-2 text-indigo-600"><Icon name="shield" size={12}/> Strategic Planning & Oversight</span>
-                                                <span>{stats.stratSplit.strat}% Allocation</span>
-                                            </div>
-                                            <div className="h-5 bg-slate-100 rounded-full overflow-hidden p-1">
-                                                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${stats.stratSplit.strat}%` }} />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex justify-between items-center text-xs font-black uppercase mb-3 text-slate-500">
-                                                <span className="flex items-center gap-2"><Icon name="briefcase" size={12}/> Operational Execution</span>
-                                                <span>{stats.stratSplit.ops}% Allocation</span>
-                                            </div>
-                                            <div className="h-5 bg-slate-100 rounded-full overflow-hidden p-1">
-                                                <div className="h-full bg-slate-400 rounded-full" style={{ width: `${stats.stratSplit.ops}%` }} />
-                                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                {/* WORKFORCE HEALTH STATUS */}
+                                <div className="lg:col-span-2 pro-card">
+                                    <div className="flex justify-between items-center mb-10">
+                                        <h3 className="text-sm font-black uppercase tracking-[0.4em] text-slate-400">Organization Health & Capacity</h3>
+                                        <div className="flex gap-4">
+                                            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"/> <span className="text-[10px] font-black uppercase text-slate-400">Stable</span></div>
+                                            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"/> <span className="text-[10px] font-black uppercase text-slate-400">At Risk</span></div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="glass-panel p-10 rounded-3xl">
-                                    <h2 className="text-lg font-black uppercase tracking-widest text-slate-900 mb-8 border-b border-slate-100 pb-4">Functional Workload Intensity</h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {stats.moduleLoad.slice(0, 8).map((mod, i) => (
-                                            <div key={i} className="flex justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all shadow-sm">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-2 h-2 rounded-full ${i < 3 ? 'bg-red-500' : 'bg-slate-300'}`} />
-                                                    <span className="text-[11px] font-black uppercase text-slate-600 tracking-tight truncate w-32">{mod.title}</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                        {stats.roleBreakdown.map(r => (
+                                            <div key={r.id} className="text-center">
+                                                <div className="relative inline-block mb-6">
+                                                    <svg className="w-32 h-32 transform -rotate-90">
+                                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364} strokeDashoffset={364 - (364 * Math.min(r.hours/40, 1.2))} className={`${r.hours > 40 ? 'text-red-500' : 'text-indigo-600'} transition-all duration-1000`} />
+                                                    </svg>
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                        <div className="text-2xl font-black text-slate-900">{Math.round((r.hours/40)*100)}%</div>
+                                                        <div className="text-[8px] font-black uppercase text-slate-400 tracking-tighter">UTIL</div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-sm font-black text-slate-900">{mod.hours}h</span>
+                                                <div className="font-black text-slate-900 uppercase tracking-tighter mb-1">{r.title}</div>
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{r.hours} Hours Managed</div>
+                                                <div className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${r.risk === 'High' ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-emerald-50 text-emerald-500 border border-emerald-100'}`}>
+                                                    {r.risk} Load
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* STRATEGIC BALANCE */}
+                                <div className="pro-card bg-slate-900 text-white border-none shadow-2xl">
+                                    <h3 className="text-sm font-black uppercase tracking-[0.4em] text-slate-500 mb-10">Strategic Positioning</h3>
+                                    <div className="space-y-12">
+                                        <div>
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="text-xs font-black uppercase tracking-widest flex items-center gap-3"><Icon name="target" size={14} className="text-emerald-400"/> Strategic Planning</div>
+                                                <div className="text-lg font-black text-emerald-400">{stats.stratSplit.strat}%</div>
+                                            </div>
+                                            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${stats.stratSplit.strat}%` }}/>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="text-xs font-black uppercase tracking-widest flex items-center gap-3"><Icon name="layers" size={14} className="text-indigo-400"/> Daily Operations</div>
+                                                <div className="text-lg font-black text-indigo-400">{stats.stratSplit.ops}%</div>
+                                            </div>
+                                            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${stats.stratSplit.ops}%` }}/>
+                                            </div>
+                                        </div>
+                                        <div className="pt-8 border-t border-white/5">
+                                            <div className="p-6 bg-white/5 rounded-2xl border border-white/5">
+                                                <div className="flex items-center gap-4 mb-3">
+                                                    <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><Icon name="alert" size={14}/></div>
+                                                    <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Recommendation</div>
+                                                </div>
+                                                <p className="text-[11px] leading-relaxed text-slate-400 font-medium">The current architecture maintains a <strong>{stats.stratSplit.strat}%</strong> strategic focus. Aim for +5% optimization by automating Monthly Payroll Admin tasks.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* MODULE INTENSITY LIST */}
+                            <div className="pro-card">
+                                <h3 className="text-sm font-black uppercase tracking-[0.4em] text-slate-400 mb-10">Resource Intensity Ranking</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-6">
+                                    {stats.catBreakdown.map((c, i) => (
+                                        <div key={c.id} className="flex items-center gap-6 p-6 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                                            <div className="font-black text-slate-200 text-3xl transition-colors group-hover:text-indigo-200 w-10">{(i+1).toString().padStart(2, '0')}</div>
+                                            <div className="flex-1">
+                                                <div className="font-black text-slate-900 uppercase tracking-tighter leading-none mb-1 group-hover:text-indigo-600 transition-colors">{c.title}</div>
+                                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{c.group}</div>
+                                            </div>
+                                            <div className="text-xl font-black text-slate-900 group-hover:text-indigo-600">{c.hours}<span className="text-[10px] ml-1 opacity-20">H</span></div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div 
-                            ref={containerRef}
-                            onMouseDown={handleMouseDown}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={() => setIsPanning(false)}
-                            onMouseLeave={() => setIsPanning(false)}
-                            className="flex-1 relative bg-white/40 rounded-[3rem] border border-slate-200 overflow-hidden touch-none map-container shadow-inner"
-                        >
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.02),transparent_70%)]" />
-                            <div 
-                                className="absolute inset-0 transition-all duration-300 ease-out pointer-events-none" 
-                                style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel})`, transformOrigin: '0 0' }}
-                            >
-                                <div className="pointer-events-auto w-[2400px] h-[3000px] relative">
-                                    <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-                                        {[200, 550, 850].map(y => <div key={y} className="absolute left-0 right-0 h-px bg-slate-900" style={{ top: `${y}px` }}/>)}
-                                    </div>
-                                    
-                                    {/* CONNECTIONS */}
-                                    {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => (
-                                        v.reportsTo?.map(ent => (
-                                            <Connection key={`${k}-${ent}`} start={dynamicCoords[ent]} end={dynamicCoords[k]} color="#cbd5e1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} />
-                                        ))
-                                    ))}
-                                    {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
-                                        <Connection key={`${k}-cat`} start={dynamicCoords[v.belongsTo]} end={dynamicCoords[k]} color="#6366f1" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} />
-                                    ))}
-                                    {Object.entries(data).filter(([k,v]) => v.type === 'task').map(([k, v]) => (
-                                        <Connection key={`${k}-task`} start={dynamicCoords[v.belongsToCat]} end={dynamicCoords[k]} color="#818cf8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} />
-                                    ))}
-
-                                    {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
-                                </div>
-                            </div>
-
+                        <div className="flex-1 relative flex gap-8">
                             {isAdmin && (
-                                <div className="absolute top-12 right-12 flex flex-col gap-3">
-                                    <button onClick={() => addNode('entity')} className="bg-white border-2 border-indigo-100 p-5 px-10 rounded-3xl shadow-2xl text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest">
-                                        <Icon name="plus" size={18}/> New Entity
-                                    </button>
-                                    <button onClick={() => addNode('role')} className="bg-white border-2 border-indigo-100 p-5 px-10 rounded-3xl shadow-2xl text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest">
-                                        <Icon name="plus" size={18}/> New Job Role
-                                    </button>
+                                <div className="w-80 glass-panel p-10 rounded-[3rem] flex flex-col gap-8 animate-popup z-[600] shadow-2xl border border-slate-200">
+                                    <div className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Structure Control</div>
+                                    <button onClick={() => addNode('entity')} className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-xl"><Icon name="plus" size={16}/> New Entity</button>
+                                    <button onClick={() => addNode('role')} className="w-full py-5 bg-indigo-600 text-white rounded-[1.5rem] font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-3 shadow-xl shadow-indigo-200"><Icon name="plus" size={16}/> New Role</button>
+                                    <div className="h-px bg-slate-200 my-4" />
+                                    <button onClick={() => addNode('category', selectedNode)} className="w-full py-5 bg-white border-2 border-indigo-100 text-indigo-600 rounded-[1.5rem] font-black text-[12px] uppercase tracking-widest hover:bg-indigo-50 transition-colors flex items-center justify-center gap-3"><Icon name="plus" size={16}/> New Module</button>
+                                    <button onClick={() => addNode('task', selectedNode)} className="w-full py-5 bg-white border-2 border-indigo-100 text-indigo-600 rounded-[1.5rem] font-black text-[12px] uppercase tracking-widest hover:bg-indigo-50 transition-colors flex items-center justify-center gap-3"><Icon name="plus" size={16}/> New Task</button>
                                 </div>
                             )}
 
-                            <div className="absolute bottom-12 right-12 flex flex-col gap-4">
-                                <button onClick={() => { setZoomLevel(1); setOffset({x:50, y:50}); }} className="bg-white border border-slate-200 p-5 px-10 rounded-2xl shadow-xl text-slate-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest">
-                                    <Icon name="refresh" size={16}/> Reset Center
-                                </button>
-                                <div className="text-center text-[10px] font-black opacity-30 text-slate-500 uppercase tracking-widest">Zoom: {Math.round(zoomLevel * 100)}%</div>
+                            <div 
+                                ref={containerRef}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={() => setIsPanning(false)}
+                                onMouseLeave={() => setIsPanning(false)}
+                                className="flex-1 relative bg-white/40 rounded-[4rem] border border-slate-200 overflow-hidden touch-none shadow-inner"
+                            >
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.01),transparent_70%)]" />
+                                <div 
+                                    className="absolute inset-0 transition-all duration-300 pointer-events-none" 
+                                    style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel})`, transformOrigin: '0 0' }}
+                                >
+                                    <div className="pointer-events-auto w-[2400px] h-[3000px] relative">
+                                        {/* Reporting Lines */}
+                                        {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => (
+                                            v.reportsTo?.map(ent => {
+                                                const isCoveringFocused = isIssues && (activeNodeId === 'manager' || activeNodeId === 'payroll');
+                                                return (
+                                                    <Connection 
+                                                        key={`${k}-${ent}`} start={dynamicCoords[ent]} end={dynamicCoords[k]} color="#cbd5e1" isReporting={true} 
+                                                        active={!isCoveringFocused && (activeNodeId === k || activeNodeId === ent)} isFaint={isCoveringFocused}
+                                                    />
+                                                );
+                                            })
+                                        ))}
+                                        
+                                        {/* Job Lines */}
+                                        {Object.entries(data).filter(([k,v]) => v.type === 'category').flatMap(([k, v]) => {
+                                            const sourceKey = v.belongsTo;
+                                            const connectionLines = [];
+                                            const isCoveringFocused = isIssues && (activeNodeId === 'manager' || activeNodeId === 'payroll');
+
+                                            if (!(isIssues && sourceKey === 'recruiter')) {
+                                                connectionLines.push(
+                                                    <Connection 
+                                                        key={`${k}-cat-normal`} start={dynamicCoords[sourceKey]} end={dynamicCoords[k]} color="#6366f1" pulsing={true}
+                                                        active={!isCoveringFocused && (activeNodeId === k || activeNodeId === sourceKey)} isFaint={isCoveringFocused}
+                                                    />
+                                                );
+                                            } else {
+                                                if (coverageMap.manager.includes(k)) {
+                                                    connectionLines.push(<Connection key={`${k}-mgr-cover`} start={dynamicCoords['manager']} end={dynamicCoords[k]} color="#ef4444" pulsing={true} active={activeNodeId === 'manager' || activeNodeId === k} isFaint={isCoveringFocused && activeNodeId !== 'manager'} />);
+                                                }
+                                                if (coverageMap.payroll.includes(k)) {
+                                                    connectionLines.push(<Connection key={`${k}-pay-cover`} start={dynamicCoords['payroll']} end={dynamicCoords[k]} color="#ef4444" pulsing={true} active={activeNodeId === 'payroll' || activeNodeId === k} isFaint={isCoveringFocused && activeNodeId !== 'payroll'} />);
+                                                }
+                                            }
+                                            return connectionLines;
+                                        })}
+
+                                        {/* Task Lines */}
+                                        {Object.entries(data).filter(([k,v]) => v.type === 'task').map(([k, v]) => {
+                                            const isCoveringFocused = isIssues && (activeNodeId === 'manager' || activeNodeId === 'payroll');
+                                            const isCoveredTaskParent = isIssues && (coverageMap[activeNodeId || ''] || []).includes(v.belongsToCat);
+
+                                            return (
+                                                <Connection 
+                                                    key={`${k}-line`} start={dynamicCoords[v.belongsToCat]} end={dynamicCoords[k]} color="#818CF8" 
+                                                    active={isCoveringFocused ? isCoveredTaskParent && (activeNodeId === k || activeNodeId === v.belongsToCat) : (activeNodeId === k || activeNodeId === v.belongsToCat)}
+                                                    isFaint={isCoveringFocused && !isCoveredTaskParent} pulsing={true}
+                                                />
+                                            );
+                                        })}
+
+                                        {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
+                                    </div>
+                                </div>
+
+                                {/* Reset Center Box: Bottom Right, Smaller, 40% zoom */}
+                                <div className="absolute bottom-12 right-12 flex flex-col items-end gap-3 z-[500]">
+                                    <button onClick={resetView} className="bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 text-[11px] font-black uppercase tracking-widest border border-slate-700">
+                                        <Icon name="refresh" size={14}/> Reset Center
+                                    </button>
+                                    <div className="bg-white/90 backdrop-blur px-5 py-3 rounded-2xl border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest shadow-xl">
+                                        Zoom: {Math.round(zoomLevel * 100)}%
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
