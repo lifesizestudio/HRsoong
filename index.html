@@ -180,7 +180,7 @@
                 m_strat_leadership: { type: 'task', title: "Strategic Leadership", hours: 15, belongsToCat: "cat_m_strat" },
                 m_workforce: { type: 'task', title: "Workforce Planning", hours: 5, belongsToCat: "cat_m_strat" },
                 m_handbook: { type: 'task', title: "Handbook & Policy", hours: 6, belongsToCat: "cat_m_policy" },
-                m_legal: { type: 'task', title: "Legal Compliance", hours: 4, belongsToCat: "cat_m_policy" },
+                m_legal: { x: 500, y: 1180 },
                 m_payroll_audit: { type: 'task', title: "Final Payroll Audit", hours: 4, belongsToCat: "cat_m_payroll_oversight" },
                 m_vendor_mgmt: { type: 'task', title: "Vendor Management", hours: 3, belongsToCat: "cat_m_payroll_oversight" },
                 m_compliance_review: { type: 'task', title: "Compliance Review", hours: 5, belongsToCat: "cat_m_payroll_oversight" },
@@ -368,10 +368,24 @@
                 
                 let isRelated = false;
                 if (activeNodeId) {
-                    if (nodeKey === activeNodeId) isRelated = true;
-                    else if (nodeData.type === 'category' && (nodeData.belongsTo === activeNodeId || data[activeNodeId]?.belongsToCat === nodeKey)) isRelated = true;
-                    else if (nodeData.type === 'role' && (data[activeNodeId]?.belongsTo === nodeKey)) isRelated = true;
-                    else if (nodeData.type === 'task' && (nodeData.belongsToCat === activeNodeId || (data[activeNodeId]?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) isRelated = true;
+                    if (nodeKey === activeNodeId) {
+                        isRelated = true;
+                    } else if (nodeData.type === 'entity' && data[activeNodeId]?.reportsTo?.includes(nodeKey)) {
+                        // Connection: Role -> Entities
+                        isRelated = true;
+                    } else if (nodeData.type === 'role' && nodeData.reportsTo?.includes(activeNodeId)) {
+                        // Connection: Entity -> Roles
+                        isRelated = true;
+                    } else if (nodeData.type === 'category' && (nodeData.belongsTo === activeNodeId || data[activeNodeId]?.belongsToCat === nodeKey)) {
+                        // Connection: Role -> Categories OR Category -> Role
+                        isRelated = true;
+                    } else if (nodeData.type === 'role' && (data[activeNodeId]?.belongsTo === nodeKey)) {
+                        // Connection: Category -> Role (Reverse lookup)
+                        isRelated = true;
+                    } else if (nodeData.type === 'task' && (nodeData.belongsToCat === activeNodeId || (data[activeNodeId]?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) {
+                        // Connection: Category/Role -> Tasks
+                        isRelated = true;
+                    }
                     
                     if (isIssues && (activeNodeId === 'manager' || activeNodeId === 'payroll')) {
                         if ((coverageMap[activeNodeId] || []).includes(nodeKey)) isRelated = true;
