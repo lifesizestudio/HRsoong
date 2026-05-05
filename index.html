@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic HR Architecture Map - Analytics Audit</title>
+    <title>Strategic HR Architecture Map - Executive Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -12,51 +12,43 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; 
-            color: #1e293b; 
+            background-color: #f1f5f9; 
+            color: #0f172a; 
             overflow: hidden;
             background-image: 
-                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
         }
         
-        @keyframes signalFlow {
-            from { stroke-dashoffset: 40; }
-            to { stroke-dashoffset: 0; }
-        }
-
-        .animate-signal {
-            stroke-dasharray: 4, 12; 
-            animation: signalFlow 1.5s linear infinite;
-        }
-
         .node-card {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(226, 232, 240, 1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, left, top;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .active-glow {
             border-color: #6366f1 !important;
-            box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
             z-index: 200 !important;
         }
 
-        .map-container {
-            cursor: grab;
-        }
-
-        .map-container:active {
-            cursor: grabbing;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.98); }
+        }
+        .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
     </style>
 </head>
 <body>
@@ -72,7 +64,13 @@
                 clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
                 refresh: <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>,
                 chevron: <polyline points="9 18 15 12 9 6" />,
-                calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>
+                calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
+                trash: <><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>,
+                plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+                activity: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+                trending: <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />,
+                alert: <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
+                briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
             };
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -115,7 +113,7 @@
             const activeNodeId = selectedNode || hoveredNode;
             const isAdmin = viewMode === 'admin';
 
-            // --- STRATEGIC AUDITED DATASET ---
+            // --- DATASET ---
             const [data, setData] = useState({
                 ent_ceg: { type: 'entity', title: "CEG CORP", employeeCount: 30, region: 'Singapore' },
                 ent_enr: { type: 'entity', title: "Enrichment", employeeCount: 125, region: 'Singapore', breakdown: { ft: 30, pt: 60, fl: 35 } },
@@ -132,7 +130,7 @@
                 cat_m_strat: { type: 'category', title: "Strategic Planning", belongsTo: 'manager' },
                 cat_m_policy: { type: 'category', title: "Policy & Compliance", belongsTo: 'manager' },
                 cat_m_payroll_oversight: { type: 'category', title: "Payroll Oversight", belongsTo: 'manager' },
-                cat_m_meetings: { type: 'category', title: "Meeting Attendance", belongsTo: 'manager' }, // NEW MODULE FOR MANAGER
+                cat_m_meetings: { type: 'category', title: "Meeting Attendance", belongsTo: 'manager' },
                 cat_m_projects: { type: 'category', title: "HR Projects", belongsTo: 'manager' },
                 
                 cat_lifecycle: { type: 'category', title: "Employee Lifecycle", belongsTo: 'recruiter' },
@@ -142,7 +140,6 @@
                 cat_pay_monthly: { type: 'category', title: "Monthly Payroll", belongsTo: 'payroll' },
                 cat_pay_yearly: { type: 'category', title: "Yearly Compliance", belongsTo: 'payroll' },
 
-                // Tasks - Manager
                 m_strat_leadership: { type: 'task', title: "Strategic Leadership", hours: 15, belongsToCat: "cat_m_strat" },
                 m_workforce: { type: 'task', title: "Workforce Planning", hours: 5, belongsToCat: "cat_m_strat" },
                 m_handbook: { type: 'task', title: "Handbook & Policy", hours: 6, belongsToCat: "cat_m_policy" },
@@ -150,11 +147,10 @@
                 m_payroll_audit: { type: 'task', title: "Final Payroll Audit", hours: 4, belongsToCat: "cat_m_payroll_oversight" },
                 m_vendor_mgmt: { type: 'task', title: "Vendor Management", hours: 3, belongsToCat: "cat_m_payroll_oversight" },
                 m_compliance_review: { type: 'task', title: "Compliance Review", hours: 5, belongsToCat: "cat_m_payroll_oversight" },
-                m_attend_meetings: { type: 'task', title: "Attend Meetings", hours: 12, belongsToCat: "cat_m_meetings" }, // MOVED TO MANAGER
-                m_action_tracking: { type: 'task', title: "Action Tracking", hours: 4, belongsToCat: "cat_m_meetings" }, // MOVED TO MANAGER
+                m_attend_meetings: { type: 'task', title: "Attend Meetings", hours: 12, belongsToCat: "cat_m_meetings" },
+                m_action_tracking: { type: 'task', title: "Action Tracking", hours: 4, belongsToCat: "cat_m_meetings" },
                 m_hris: { type: 'task', title: "HRIS Implementation", hours: 8, belongsToCat: "cat_m_projects" },
 
-                // Tasks - Executive
                 hr_onboarding: { type: 'task', title: "Onboarding", hours: 4, belongsToCat: "cat_lifecycle" },
                 hr_offboarding: { type: 'task', title: "Offboarding", hours: 3, belongsToCat: "cat_lifecycle" },
                 hr_hsk_recruit: { type: 'task', title: "HSK Recruitment", hours: 40, belongsToCat: "cat_recruitment" },
@@ -165,7 +161,6 @@
                 hr_events: { type: 'task', title: "Engagement Events", hours: 8, belongsToCat: "cat_engagement" },
                 hr_welfare: { type: 'task', title: "Staff Welfare", hours: 4, belongsToCat: "cat_engagement" },
 
-                // Tasks - Payroll
                 pay_salary: { type: 'task', title: "Salary Processing", hours: 25, belongsToCat: "cat_pay_monthly" },
                 pay_claims: { type: 'task', title: "Claims Processing", hours: 10, belongsToCat: "cat_pay_monthly" },
                 pay_bank: { type: 'task', title: "Bank Coordination", hours: 5, belongsToCat: "cat_pay_monthly" },
@@ -175,18 +170,13 @@
                 pay_audit: { type: 'task', title: "Payroll Auditing", hours: 20, belongsToCat: "cat_pay_yearly" }
             });
 
-            // REBALANCED CORE GRID
+            // COORDINATE GRID
             const baseCoords = useMemo(() => ({
                 ent_ceg: { x: 300, y: 200 }, ent_enr: { x: 600, y: 200 }, ent_hsk: { x: 900, y: 200 }, ent_klc: { x: 1200, y: 200 }, ent_tgi: { x: 1500, y: 200 }, ent_vn: { x: 1800, y: 200 }, ent_aus: { x: 2100, y: 200 },
-                
-                manager: { x: 600, y: 550 }, 
-                recruiter: { x: 1200, y: 550 }, 
-                payroll: { x: 1800, y: 550 },
-
+                manager: { x: 600, y: 550 }, recruiter: { x: 1200, y: 550 }, payroll: { x: 1800, y: 550 },
                 cat_m_strat: { x: 400, y: 850 }, cat_m_policy: { x: 500, y: 850 }, cat_m_payroll_oversight: { x: 600, y: 850 }, cat_m_meetings: { x: 700, y: 850 }, cat_m_projects: { x: 800, y: 850 },
                 cat_lifecycle: { x: 1050, y: 850 }, cat_recruitment: { x: 1150, y: 850 }, cat_ops: { x: 1250, y: 850 }, cat_engagement: { x: 1350, y: 850 },
                 cat_pay_monthly: { x: 1650, y: 850 }, cat_pay_yearly: { x: 1950, y: 850 },
-
                 m_strat_leadership: { x: 400, y: 1100 }, m_workforce: { x: 400, y: 1180 }, 
                 m_handbook: { x: 500, y: 1100 }, m_legal: { x: 500, y: 1180 },
                 m_payroll_audit: { x: 600, y: 1100 }, m_vendor_mgmt: { x: 600, y: 1180 }, m_compliance_review: { x: 600, y: 1260 },
@@ -200,71 +190,41 @@
                 pay_tax_yearly: { x: 1950, y: 1100 }, pay_benefits: { x: 1950, y: 1180 }, pay_audit: { x: 1950, y: 1260 }
             }), []);
 
-            // DYNAMIC LAYOUT ENGINE
-            const effectiveCoords = useMemo(() => {
-                const newCoords = { ...baseCoords };
-                if (!activeNodeId) return newCoords;
-                
-                const active = data[activeNodeId];
-                const focusX = baseCoords[activeNodeId]?.x || 1200;
-                const relevantCategories = [];
-                const relevantTasks = [];
-                let focusRoleId = null;
-
-                if (active.type === 'role') {
-                    focusRoleId = activeNodeId;
-                    Object.entries(data).forEach(([id, v]) => { 
-                        if (v.belongsTo === activeNodeId) {
-                            relevantCategories.push(id);
-                            Object.entries(data).forEach(([tid, tv]) => { if (tv.belongsToCat === id) relevantTasks.push(tid); });
-                        }
-                    });
-                } else if (active.type === 'category') {
-                    focusRoleId = active.belongsTo;
-                    relevantCategories.push(activeNodeId);
-                    Object.entries(data).forEach(([id, v]) => { if (v.belongsToCat === activeNodeId) relevantTasks.push(id); });
-                } else if (active.type === 'task') {
-                    const catId = active.belongsToCat;
-                    relevantCategories.push(catId);
-                    focusRoleId = data[catId]?.belongsTo;
-                    Object.entries(data).forEach(([tid, tv]) => { if (tv.belongsToCat === catId) relevantTasks.push(tid); });
-                }
-
-                if (focusRoleId) {
-                    newCoords[focusRoleId] = { x: focusX, y: 550 };
-                    if (relevantCategories.length > 0) {
-                        const catHSpace = 240;
-                        const startX = focusX - ((relevantCategories.length - 1) * catHSpace) / 2;
-                        relevantCategories.forEach((cid, idx) => {
-                            newCoords[cid] = { x: startX + (idx * catHSpace), y: 780 };
-                        });
-                    }
-                    if (relevantTasks.length > 0) {
-                        const tasksPerRow = Math.min(4, relevantTasks.length);
-                        const hSpace = 250, vSpace = 85;
-                        relevantTasks.forEach((tid, idx) => {
-                            const row = Math.floor(idx / tasksPerRow), col = idx % tasksPerRow;
-                            const rowSize = Math.min(tasksPerRow, relevantTasks.length - row * tasksPerRow);
-                            const startX = focusX - ((rowSize - 1) * hSpace) / 2;
-                            newCoords[tid] = { x: startX + (col * hSpace), y: 1000 + (row * vSpace) };
-                        });
-                    }
-                }
-                
-                return newCoords;
-            }, [activeNodeId, data, baseCoords]);
-
+            // --- STRATEGIC ANALYTICS CALCULATOR ---
             const stats = useMemo(() => {
-                const roles = ['manager', 'recruiter', 'payroll'];
+                const roles = Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k,v]) => k);
                 const roleStats = roles.map(r => ({
                     id: r,
                     title: data[r]?.title || r,
                     hours: Object.entries(data).filter(([k,v]) => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).reduce((s, [k,v]) => s + (Number(v.hours) || 0), 0),
-                    population: (data[r]?.reportsTo || []).reduce((s, id) => s + (Number(data[id]?.employeeCount) || 0), 0)
+                    population: (data[r]?.reportsTo || []).reduce((s, id) => s + (Number(data[id]?.employeeCount) || 0), 0),
+                    tasks: Object.values(data).filter(v => v.type === 'task' && data[v.belongsToCat]?.belongsTo === r).length
                 }));
+
+                const moduleLoad = Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k,v]) => ({
+                    id: k,
+                    title: v.title,
+                    belongsTo: v.belongsTo,
+                    hours: Object.values(data).filter(t => t.belongsToCat === k).reduce((s,t) => s + (Number(t.hours) || 0), 0)
+                })).sort((a,b) => b.hours - a.hours);
+
+                const totalHours = roleStats.reduce((s, r) => s + r.hours, 0);
+                const totalStaff = Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + (Number(v.employeeCount) || 0), 0);
+                
+                const strategicCatIds = ['cat_m_strat', 'cat_m_policy', 'cat_m_payroll_oversight', 'cat_m_meetings', 'cat_m_projects'];
+                const stratHours = moduleLoad.filter(m => strategicCatIds.includes(m.id)).reduce((s,m) => s + m.hours, 0);
+                const opsHours = totalHours - stratHours;
+
                 return { 
-                    roleStats, totalHours: roleStats.reduce((s, r) => s + r.hours, 0),
-                    totalStaff: Object.values(data).filter(v => v.type === 'entity').reduce((s,v) => s + (Number(v.employeeCount) || 0), 0)
+                    roleStats, 
+                    moduleLoad,
+                    totalHours,
+                    totalStaff,
+                    hrRatio: (totalStaff / roles.length).toFixed(1),
+                    stratSplit: totalHours > 0 ? {
+                        strat: Math.round((stratHours / totalHours) * 100),
+                        ops: Math.round((opsHours / totalHours) * 100)
+                    } : { strat: 0, ops: 0 }
                 };
             }, [data]);
 
@@ -289,14 +249,8 @@
                 const activeData = activeNodeId ? data[activeNodeId] : null;
                 const isFocused = activeNodeId === nodeKey;
                 const isTask = nodeData.type === 'task';
-                
-                let isVisible = true;
-                if (viewMode !== 'admin' && isTask) {
-                    isVisible = (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
-                }
-
-                const { x, y } = effectiveCoords[nodeKey] || { x: 1200, y: 500 };
-
+                let isVisible = viewMode === 'admin' || !isTask || (isFocused || nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId));
+                const { x, y } = baseCoords[nodeKey] || { x: 1200, y: 500 };
                 let isRelated = false;
                 if (activeNodeId) {
                     if (nodeKey === activeNodeId) isRelated = true;
@@ -306,71 +260,57 @@
                     else if (isTask && (nodeData.belongsToCat === activeNodeId || (activeData?.type === 'role' && data[nodeData.belongsToCat]?.belongsTo === activeNodeId))) isRelated = true;
                 }
 
-                const isDimmed = activeNodeId && !isRelated;
-
                 return (
                     <div key={nodeKey} 
-                        onClick={(e) => { e.stopPropagation(); setSelectedNode(prev => prev === nodeKey ? null : nodeKey); }}
-                        onMouseEnter={() => setHoveredNode(nodeKey)} 
-                        onMouseLeave={() => setHoveredNode(null)} 
-                        className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-transition node-card
-                            ${nodeData.type === 'entity' ? 'w-64 p-8 rounded-3xl' : (nodeData.type === 'role' ? 'w-80 p-8 rounded-[3.5rem]' : (nodeData.type === 'category' ? 'w-56 p-5 rounded-2xl' : 'w-52 p-4 rounded-full'))} 
+                        onClick={(e) => { e.stopPropagation(); if (!isAdmin) setSelectedNode(prev => prev === nodeKey ? null : nodeKey); }}
+                        onMouseEnter={() => !isAdmin && setHoveredNode(nodeKey)} 
+                        onMouseLeave={() => !isAdmin && setHoveredNode(null)} 
+                        className={`group absolute transform -translate-x-1/2 -translate-y-1/2 node-card
+                            ${nodeData.type === 'entity' ? 'w-64 p-8 rounded-2xl' : (nodeData.type === 'role' ? 'w-80 p-8 rounded-[2rem]' : (nodeData.type === 'category' ? 'w-56 p-5 rounded-xl' : 'w-52 p-4 rounded-full'))} 
                             ${isFocused ? 'active-glow scale-[1.08] z-[300]' : 'z-10'} 
-                            ${isRelated && !isFocused ? 'border-indigo-500 z-[200] scale-[1.04] shadow-xl' : ''} 
+                            ${isRelated && !isFocused ? 'border-indigo-500 z-[200] scale-[1.04]' : ''} 
                             ${isVisible ? 'opacity-100' : 'opacity-0 scale-90 pointer-events-none'}
-                            ${isDimmed && isVisible ? 'opacity-[0.15] grayscale-[0.6] blur-[2px]' : 'cursor-pointer'}`} 
+                            ${activeNodeId && !isRelated && isVisible ? 'opacity-[0.15] grayscale-[0.6] blur-[2px]' : 'cursor-pointer'}`} 
                         style={{ left: `${x}px`, top: `${y}px` }}
                     >
                         {nodeData.type === 'entity' ? (
                             <div className="text-left">
-                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest leading-none">{nodeData.region}</div>
-                                <div className="font-black text-[28px] uppercase tracking-tighter mb-5 text-slate-900 leading-none">{nodeData.title}</div>
-                                <div className={`w-full py-4 rounded-2xl flex items-center justify-center gap-4 transition-all ${isRelated ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                                    <Icon name="users" size={20}/><span className="text-2xl font-black">{nodeData.employeeCount}</span>
-                                </div>
-                                {nodeData.breakdown && (
-                                    <div className="mt-6 pt-5 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                        <div className="flex flex-col items-center"><span>FT</span><span className="text-slate-800 font-black mt-2 text-sm">{nodeData.breakdown.ft}</span></div>
-                                        <div className="w-[1px] h-6 bg-slate-100" />
-                                        <div className="flex flex-col items-center"><span>PT</span><span className="text-slate-800 font-black mt-2 text-sm">{nodeData.breakdown.pt}</span></div>
-                                        <div className="w-[1px] h-6 bg-slate-100" />
-                                        <div className="flex flex-col items-center"><span>FL</span><span className="text-slate-800 font-black mt-2 text-sm">{nodeData.breakdown.fl}</span></div>
+                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">{nodeData.region}</div>
+                                <div className="font-black text-[24px] uppercase tracking-tighter mb-4 text-slate-900 leading-none">{nodeData.title}</div>
+                                <div className={`w-full py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${isRelated ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                                    <div className="flex items-center gap-2">
+                                        <Icon name="users" size={16}/><span className="text-xl font-black">{nodeData.employeeCount}</span>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         ) : nodeData.type === 'role' ? (
                             <div className="flex flex-col text-left">
                                 <div className="flex justify-between items-center mb-6">
-                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none">Management Level</div>
-                                    <div className="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 text-[11px] font-bold border border-indigo-100">P: {stats.roleStats.find(r => r.id === nodeKey)?.population}</div>
+                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{nodeData.subtitle}</div>
+                                    <div className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-bold">P: {stats.roleStats.find(r => r.id === nodeKey)?.population}</div>
                                 </div>
-                                <div className="font-black text-[32px] leading-none mb-8 uppercase tracking-tighter text-slate-900">{nodeData.title}</div>
-                                <div className="bg-slate-50 rounded-[2.5rem] p-6 border border-slate-100 shadow-inner">
-                                    <div className="flex justify-between items-center mb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                                        <span>Capacity Utilization</span>
-                                        <span className="text-xl font-black text-indigo-600">{stats.roleStats.find(r => r.id === nodeKey)?.hours}h</span>
+                                <div className="font-black text-[30px] leading-none mb-6 uppercase tracking-tighter text-slate-900">{nodeData.title}</div>
+                                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                                    <div className="flex justify-between items-center mb-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                                        <span>Util Rate</span>
+                                        <span className="text-lg text-indigo-600">{stats.roleStats.find(r => r.id === nodeKey)?.hours}h</span>
                                     </div>
-                                    <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden border border-white">
-                                        <div className={`h-full transition-all duration-1000 ${stats.roleStats.find(r => r.id === nodeKey)?.hours > 40 ? 'bg-red-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min((stats.roleStats.find(r => r.id === nodeKey)?.hours / 40) * 100, 100)}%` }}/>
+                                    <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                        <div className={`h-full transition-all duration-1000 ${stats.roleStats.find(r => r.id === nodeKey)?.hours > 40 ? 'bg-red-500' : 'bg-indigo-600'}`} style={{ width: `${Math.min((stats.roleStats.find(r => r.id === nodeKey)?.hours / 40) * 100, 100)}%` }}/>
                                     </div>
                                 </div>
                             </div>
                         ) : nodeData.type === 'category' ? (
                             <div className="flex justify-between items-center text-left">
-                                <div className="truncate pr-4">
-                                    <div className="text-[14px] font-black uppercase text-slate-800 mb-1 truncate leading-none">{nodeData.title}</div>
-                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Strategic Module</div>
-                                </div>
-                                <div className={`p-2.5 rounded-xl transition-all ${isRelated ? 'bg-indigo-100 text-indigo-600 shadow-sm' : 'bg-slate-100 text-slate-400'}`}>
-                                    <Icon name={nodeKey === 'cat_m_meetings' ? "calendar" : "chevron"} size={16} className={isFocused ? 'rotate-90' : ''}/>
-                                </div>
+                                <div className="text-[13px] font-black uppercase text-slate-800 truncate leading-none">{nodeData.title}</div>
+                                <Icon name="chevron" size={16} className={`text-slate-400 ${isFocused ? 'rotate-90' : ''}`}/>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-4 px-2 text-left">
-                                <div className={`p-3 rounded-full shadow-sm ${isRelated ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 text-indigo-400'}`}><Icon name="clock" size={16}/></div>
+                            <div className="flex items-center gap-3 px-2 text-left">
+                                <div className={`p-2.5 rounded-full ${isRelated ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 text-indigo-400'}`}><Icon name="clock" size={14}/></div>
                                 <div className="truncate flex-1">
-                                    <div className="text-[13px] font-bold truncate uppercase text-slate-700 leading-none mb-1.5">{nodeData.title}</div>
-                                    <div className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter leading-none">{nodeData.hours} HRS</div>
+                                    <div className="text-[12px] font-bold truncate uppercase text-slate-700 leading-none mb-1">{nodeData.title}</div>
+                                    <div className="text-[10px] font-black text-indigo-500">{nodeData.hours} HRS</div>
                                 </div>
                             </div>
                         )}
@@ -379,37 +319,83 @@
             };
 
             return (
-                <div className="min-h-screen relative flex flex-col p-8 lg:p-12" onClick={() => setSelectedNode(null)}>
-                    <header className="relative z-[500] flex flex-col lg:flex-row justify-between items-center gap-8 bg-white p-8 rounded-[3rem] mb-12 shadow-xl border border-slate-200">
+                <div className="min-h-screen relative flex flex-col p-8 lg:p-12 selection:bg-indigo-100" onClick={() => setSelectedNode(null)}>
+                    <header className="relative z-[500] flex flex-col lg:flex-row justify-between items-center gap-8 glass-panel p-8 rounded-3xl mb-12 shadow-sm">
                         <div className="flex items-center gap-8 text-left">
-                            <div className="p-6 bg-indigo-600 rounded-[2rem] shadow-2xl shadow-indigo-200"><Icon name="shield" size={36} className="text-white"/></div>
+                            <div className="p-5 bg-slate-900 rounded-2xl shadow-xl"><Icon name="shield" size={32} className="text-white"/></div>
                             <div>
-                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-2 text-slate-800">HR Strategy Map</h1>
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.4em]">Organization Architecture Re-Audit</p>
+                                <h1 className="text-3xl font-black tracking-tighter uppercase leading-none mb-1 text-slate-900">Executive HR Command</h1>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Integrated Resource & Capacity Audit</p>
                             </div>
                         </div>
-                        <div className="flex gap-2 bg-slate-50 p-2.5 rounded-[2rem] border border-slate-200">
+                        <div className="flex gap-2 bg-slate-200/50 p-1.5 rounded-2xl">
                             {['presentation', 'analytics', 'admin'].map(m => (
-                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-12 py-4 rounded-2xl text-[12px] font-black transition-all tracking-[0.2em] uppercase ${viewMode === m ? 'bg-white text-indigo-600 shadow-lg' : 'text-slate-400 hover:text-white'}`}>{m.toUpperCase()}</button>
+                                <button key={m} onClick={(e) => { e.stopPropagation(); setViewMode(m); }} className={`px-10 py-3 rounded-xl text-[11px] font-black transition-all tracking-widest uppercase ${viewMode === m ? 'bg-white text-slate-900 shadow-md scale-105' : 'text-slate-500 hover:text-slate-900'}`}>{m}</button>
                             ))}
                         </div>
                     </header>
 
                     {viewMode === 'analytics' ? (
-                        <div className="flex-1 bg-white rounded-[4rem] p-16 border border-slate-200 shadow-2xl animate-popup text-left">
-                            <div className="max-w-6xl mx-auto space-y-16 text-center">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-                                    {[
-                                        { label: "Meeting Attendance", val: "12", unit: "hrs", color: "emerald-600" },
-                                        { label: "Audit Review", val: "100", unit: "%", color: "indigo-600" },
-                                        { label: "Global Population", val: stats.totalStaff, unit: "pax", color: "slate-800" },
-                                        { label: "Architecture Sum", val: "26", unit: "tasks", color: "indigo-600" }
-                                    ].map((s, i) => (
-                                        <div key={i} className="bg-slate-50 p-12 rounded-[3rem] border border-slate-100">
-                                            <div className="text-[12px] font-black text-slate-400 mb-6 uppercase tracking-widest leading-none">{s.label}</div>
-                                            <div className={`text-7xl font-black text-${s.color} tracking-tighter`}>{s.val}<span className="text-sm text-slate-300 ml-4 font-black uppercase">{s.unit}</span></div>
+                        <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-4 text-left pb-20">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                                <div className="glass-panel p-8 rounded-3xl border-l-4 border-indigo-600">
+                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="activity" size={14}/> Total Org Load</div>
+                                    <div className="text-6xl font-black text-slate-900 tracking-tighter">{stats.totalHours}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Hrs/Wk</span></div>
+                                </div>
+                                <div className="glass-panel p-8 rounded-3xl">
+                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="users" size={14}/> HR Service Ratio</div>
+                                    <div className="text-6xl font-black text-slate-900 tracking-tighter">1:{Math.round(stats.hrRatio)}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Staff</span></div>
+                                </div>
+                                <div className="glass-panel p-8 rounded-3xl">
+                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="trending" size={14}/> Strategic Value</div>
+                                    <div className="text-6xl font-black text-emerald-600 tracking-tighter">{stats.stratSplit.strat}%</div>
+                                </div>
+                                <div className={`glass-panel p-8 rounded-3xl ${stats.roleStats.some(r => r.hours > 40) ? 'bg-red-50/50' : ''}`}>
+                                    <div className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2"><Icon name="alert" size={14}/> Burnout Risk</div>
+                                    <div className={`text-6xl font-black tracking-tighter ${stats.roleStats.some(r => r.hours > 40) ? 'text-red-600' : 'text-slate-900'}`}>{stats.roleStats.filter(r => r.hours > 40).length}<span className="text-xs text-slate-300 ml-2 font-black uppercase">Roles</span></div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="glass-panel p-10 rounded-3xl">
+                                    <h2 className="text-lg font-black uppercase tracking-widest text-slate-900 mb-8 border-b border-slate-100 pb-4">Resource Portfolio Matrix</h2>
+                                    <div className="space-y-8">
+                                        <div>
+                                            <div className="flex justify-between items-center text-xs font-black uppercase mb-3">
+                                                <span className="flex items-center gap-2 text-indigo-600"><Icon name="shield" size={12}/> Strategic Planning & Oversight</span>
+                                                <span>{stats.stratSplit.strat}% Allocation</span>
+                                            </div>
+                                            <div className="h-5 bg-slate-100 rounded-full overflow-hidden p-1">
+                                                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${stats.stratSplit.strat}%` }} />
+                                            </div>
                                         </div>
-                                    ))}
+                                        <div>
+                                            <div className="flex justify-between items-center text-xs font-black uppercase mb-3 text-slate-500">
+                                                <span className="flex items-center gap-2"><Icon name="briefcase" size={12}/> Operational Execution</span>
+                                                <span>{stats.stratSplit.ops}% Allocation</span>
+                                            </div>
+                                            <div className="h-5 bg-slate-100 rounded-full overflow-hidden p-1">
+                                                <div className="h-full bg-slate-400 rounded-full" style={{ width: `${stats.stratSplit.ops}%` }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="glass-panel p-10 rounded-3xl">
+                                    <h2 className="text-lg font-black uppercase tracking-widest text-slate-900 mb-8 border-b border-slate-100 pb-4">Functional Workload Intensity</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {stats.moduleLoad.slice(0, 8).map((mod, i) => (
+                                            <div key={i} className="flex justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all shadow-sm">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-2 h-2 rounded-full ${i < 3 ? 'bg-red-500' : 'bg-slate-300'}`} />
+                                                    <span className="text-[11px] font-black uppercase text-slate-600 tracking-tight truncate w-32">{mod.title}</span>
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-sm font-black text-slate-900">{mod.hours}h</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -420,39 +406,37 @@
                             onMouseMove={handleMouseMove}
                             onMouseUp={() => setIsPanning(false)}
                             onMouseLeave={() => setIsPanning(false)}
-                            className="flex-1 relative bg-white/50 rounded-[4rem] border border-slate-200 overflow-hidden touch-none map-container shadow-inner"
+                            className="flex-1 relative bg-white/40 rounded-[3rem] border border-slate-200 overflow-hidden touch-none map-container shadow-inner"
                         >
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.03),transparent_70%)]" />
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.02),transparent_70%)]" />
                             <div 
                                 className="absolute inset-0 transition-all duration-300 ease-out pointer-events-none" 
                                 style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoomLevel})`, transformOrigin: '0 0' }}
                             >
                                 <div className="pointer-events-auto w-[2400px] h-[3000px] relative">
                                     <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-                                        {[200, 550, 850].map(y => <div key={y} className="absolute left-0 right-0 h-px bg-slate-900 shadow-sm" style={{ top: `${y}px` }}/>)}
+                                        {[200, 550, 850].map(y => <div key={y} className="absolute left-0 right-0 h-px bg-slate-900" style={{ top: `${y}px` }}/>)}
                                     </div>
                                     
                                     {Object.entries(data).filter(([k,v]) => v.type === 'role').map(([k, v]) => (
                                         v.reportsTo?.map(ent => (
-                                            <Connection key={`${k}-${ent}`} start={effectiveCoords[ent]} end={effectiveCoords[k]} color="#cbd5e1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} />
+                                            <Connection key={`${k}-${ent}`} start={baseCoords[ent]} end={baseCoords[k]} color="#cbd5e1" isReporting={true} active={activeNodeId === k || activeNodeId === ent} />
                                         ))
                                     ))}
                                     {Object.entries(data).filter(([k,v]) => v.type === 'category').map(([k, v]) => (
-                                        <Connection key={`${k}-cat`} start={effectiveCoords[v.belongsTo]} end={effectiveCoords[k]} color="#6366f1" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} />
+                                        <Connection key={`${k}-cat`} start={baseCoords[v.belongsTo]} end={baseCoords[k]} color="#6366f1" active={activeNodeId === k || activeNodeId === v.belongsTo || data[activeNodeId]?.belongsToCat === k} pulsing={true} />
                                     ))}
                                     {Object.entries(data).filter(([k,v]) => v.type === 'task').map(([k, v]) => (
-                                        <Connection key={`${k}-task`} start={effectiveCoords[v.belongsToCat]} end={effectiveCoords[k]} color="#818cf8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} />
+                                        <Connection key={`${k}-task`} start={baseCoords[v.belongsToCat]} end={baseCoords[k]} color="#818cf8" active={activeNodeId === k || activeNodeId === v.belongsToCat} pulsing={true} />
                                     ))}
 
                                     {Object.keys(data).map(nodeKey => renderNode(nodeKey))}
                                 </div>
                             </div>
-
                             <div className="absolute bottom-12 right-12 flex flex-col gap-4">
-                                <button onClick={() => { setZoomLevel(1); setOffset({x:50, y:50}); }} className="bg-white border border-slate-200 p-5 px-10 rounded-3xl shadow-2xl text-slate-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-3 text-xs font-black uppercase tracking-widest">
-                                    <Icon name="refresh" size={18}/> Reset View
+                                <button onClick={() => { setZoomLevel(1); setOffset({x:50, y:50}); }} className="bg-white border border-slate-200 p-5 px-10 rounded-2xl shadow-xl text-slate-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest">
+                                    <Icon name="refresh" size={16}/> Reset Center
                                 </button>
-                                <div className="text-center text-[10px] font-black opacity-30 text-slate-500 uppercase tracking-widest">Zoom: {Math.round(zoomLevel * 100)}%</div>
                             </div>
                         </div>
                     )}
